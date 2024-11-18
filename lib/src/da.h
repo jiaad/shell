@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define initial_capacity 8
+#define INITIAL_CAPACITY 8
 
 typedef struct DA {
   int size;
