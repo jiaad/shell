@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include "shell.h"
 // ls -a
 // touch file.c
 // mkaidr jiad123
@@ -18,24 +18,6 @@
  * ]
  */
 
-typedef enum tokens {
-  // basics
-  STRING, // COMMAND ?
-  IDENTIFIER,
-  DASH,
-  SEMICOLON,
-  POINT,
-  DOT,
-  SLASH,
-  TILDA
-} tokens_t;
-
-typedef struct Token {
-  int start;
-  int end;
-  char *literal;
-  tokens_t type;
-} Token;
 
 typedef struct Scanner {
   int pos;
@@ -43,19 +25,13 @@ typedef struct Scanner {
   char ch;
   char *input;
 } Scanner;
-void read_commands(Token **tokens, char *command);
+
+void read_commands(DA *tokens, char *command);
 void read_command(char *str);
 void token_create(Token token);
 char *split_str(char *src, int start, int end);
 int cs_strlen(char *str);
 
-void token_create(Token token) {
-  token.start = 0;
-  token.end = 0;
-  token.type = STRING;
-  token.literal = strdup("jiad");
-}
-void token_print(Token *token) { printf("{literal: %s}\n", token->literal); }
 
 int cs_strlen(char *str){
   int i = 0;
@@ -124,7 +100,7 @@ char *split_str(char *src, int start, int end){
 }
 // send array of tokens
 //
-void read_commands(Token **tokens, char *command) {
+void read_commands(DA *tokens, char *command) {
   // while next char is not /0
   Scanner scanner;
   scanner.ch = '\0'; // command[0];
@@ -136,15 +112,19 @@ void read_commands(Token **tokens, char *command) {
   while ((c = peekChar(&scanner)) > -1) {
     switch (c) {
     case '-': {
-      Token token;
-      token.start = scanner.pos;
-      token.end = scanner.pos;
-      token.type = DASH;
-      token.literal = strdup("-");
-      token_print(&token);
+      Token *token;
+      token = malloc(sizeof(Token));
+
+      token->start = scanner.pos;
+      token->end = scanner.pos;
+      token->type = DASH;
+      token->literal = strdup("-");
+      printf("befioreDA %ld\n", sizeof(token));
+      DA_push(tokens, token);
+      token_print(token);
       //printf(" %c", '-');
       fflush(stdout);
-      free_token(&token);
+      //free_token(&token);
       break;
     }
     case ' ':
@@ -209,17 +189,16 @@ void read_commands(Token **tokens, char *command) {
   }
 }
 
-Token **lexer(){
-  Token **tokens;
-  tokens = calloc(10, sizeof(Token*));
-  return tokens;
-}
-void free_lexer(Token **lexer){
-    free(lexer);
-}
 int main(int argc, char **argv) {
-  Token **tokens = lexer();
-  read_commands(tokens, "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .");
+  DA *da;
+  da = DA_new();
+  printf("[len: %d] [capacity: %d]\n",DA_size(da), da->capacity);
+  read_commands(da, "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .");
+  // read_commands(da, "find -pingiiiiiii");
   printf("OK\n");
-  free_lexer(tokens);
+  printf("[len: %d] [capacity: %d]",DA_size(da), da->capacity);
+  // for(int j = 0; j < DA_size(da); j++){
+  //   Token_free(da->items[j]);
+  // }
+  DA_free(da);
 }
