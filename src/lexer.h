@@ -1,6 +1,14 @@
 
 #ifndef __LEXER__
 #define __LEXER__
+
+typedef struct Scanner {
+  int pos;
+  int nextPos;
+  char ch;
+  char *input;
+} Scanner;
+
 void read_commands(DA *tokens, char *command);
 void read_command(char *str);
 char *slice_str(char *src, int start, int end);

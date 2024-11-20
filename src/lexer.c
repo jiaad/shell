@@ -21,12 +21,6 @@
  */
 
 
-typedef struct Scanner {
-  int pos;
-  int nextPos;
-  char ch;
-  char *input;
-} Scanner;
 
 
 int cs_strlen(char *str){
@@ -91,11 +85,12 @@ char *slice_str(char *src, int start, int end){
   int i = 0;
   char *res = malloc(sizeof(char) * len);
   if(res == NULL){
-    fprintf(stderr, "MALLOC FAILED on slice_str");
-    exit(EXIT_FAILURE);
+    unix_error("MALLOC FAILED on slice_str: ");
+    return NULL;
   }
+
   while(start <= end){
-   res[i++] = src[start++] ;
+    res[i++] = src[start++] ;
   }
   res[i] = '\0';
   return res;
@@ -161,11 +156,11 @@ void read_commands(DA *tokens, char *command) {
       token->start = scanner.pos;
       token->end = scanner.pos;
       token->type = SLASH;
-      token->literal = strdup(".");
+      token->literal = strdup("/");
       DA_push(tokens, token);
       break;
     }
-    default:
+    default:{
       if (shouldTokenizeAsStr(c)) {
         int start = scanner.pos;
         while (isPeekChar(&scanner) == 1) {
@@ -180,6 +175,7 @@ void read_commands(DA *tokens, char *command) {
         token->literal = slice_str(scanner.input, start, end);
         DA_push(tokens, token);
       }
+    }
     }
   }
 }

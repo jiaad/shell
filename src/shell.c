@@ -5,8 +5,8 @@ int main(){
   printf("WELCOME\n");
 
   while(1){
-  DA *da;
-  da = DA_new();
+    DA *da;
+    da = DA_new();
     char buf[1024];
     prompt_line();
     readline(buf);
