@@ -15,7 +15,7 @@
 
 Token *Token_new(){
   Token *token;
-  token = malloc(sizeof(Token*));
+  token = malloc(sizeof(Token));
   return token;
 }
 

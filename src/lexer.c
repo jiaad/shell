@@ -29,7 +29,7 @@ typedef struct Scanner {
 void read_commands(DA *tokens, char *command);
 void read_command(char *str);
 void token_create(Token token);
-char *split_str(char *src, int start, int end);
+char *slice_str(char *src, int start, int end);
 int cs_strlen(char *str);
 
 
@@ -88,10 +88,14 @@ void free_token(Token *token){
   free(token->literal);
 }
 
-char *split_str(char *src, int start, int end){
+char *slice_str(char *src, int start, int end){
   int len = (end - start) + 2;
   int i = 0;
   char *res = malloc(sizeof(char) * len);
+  if(res == NULL){
+    fprintf(stderr, "MALLOC FAILED on slice_str");
+    exit(EXIT_FAILURE);
+  }
   while(start <= end){
    res[i++] = src[start++] ;
   }
@@ -113,7 +117,7 @@ void read_commands(DA *tokens, char *command) {
     switch (c) {
     case '-': {
       Token *token;
-      token = malloc(sizeof(Token));
+      token = malloc(sizeof(Token*));
 
       token->start = scanner.pos;
       token->end = scanner.pos;
@@ -181,7 +185,7 @@ void read_commands(DA *tokens, char *command) {
         token.end = end;
         token.type = STRING;
 
-        token.literal = split_str(scanner.input, start, end);
+        token.literal = slice_str(scanner.input, start, end);
         token_print(&token);
         free_token(&token);
       }
