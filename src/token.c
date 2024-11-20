@@ -16,10 +16,14 @@
 Token *Token_new(){
   Token *token;
   token = malloc(sizeof(Token));
+  if(token == NULL){
+    fprintf(stderr, "Token allocation failed");
+    exit(EXIT_FAILURE);
+  }
   return token;
 }
 
-void token_print(Token *token) { 
+void Token_print(Token *token) { 
   printf("{literal: %s}\n", token->literal); 
 }
 void Token_free(Token *token) { 

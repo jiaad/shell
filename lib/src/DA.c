@@ -8,6 +8,10 @@
 
 DA *DA_new() {
   DA *da = malloc(sizeof(DA));
+  if(da == NULL){
+    fprintf(stderr, "DYNAMIC ALLOCATION FAILED");
+    exit(EXIT_FAILURE);
+  }
   da->size = 0;
   da->capacity = INITIAL_CAPACITY;
   da->items = malloc(INITIAL_CAPACITY * sizeof(void *));

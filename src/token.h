@@ -36,6 +36,6 @@ typedef struct Token {
 
 
 Token *Token_new();
-void token_print(Token *token);
+void Token_print(Token *token);
 void Token_free(Token *token);
 #endif

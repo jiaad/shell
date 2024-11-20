@@ -4,6 +4,8 @@
 #include <string.h>
 #include <unistd.h>
 #include "shell.h"
+#include "lexer.h"
+#include "token.h"
 // ls -a
 // touch file.c
 // mkaidr jiad123
@@ -26,24 +28,20 @@ typedef struct Scanner {
   char *input;
 } Scanner;
 
-void read_commands(DA *tokens, char *command);
-void read_command(char *str);
-void token_create(Token token);
-char *slice_str(char *src, int start, int end);
-int cs_strlen(char *str);
-
 
 int cs_strlen(char *str){
   int i = 0;
   while (str[i] != '\0') i++;
   return i;
 }
+
 int shouldTokenizeAsStr(char c) {
   if (isalpha(c)){
     return 1;
   }
   return 0;
 }
+
 void read_command(char *str) {
   size_t len = cs_strlen(str);
   size_t i;
@@ -117,92 +115,89 @@ void read_commands(DA *tokens, char *command) {
     switch (c) {
     case '-': {
       Token *token;
-      token = malloc(sizeof(Token*));
-
+      token = Token_new();
       token->start = scanner.pos;
       token->end = scanner.pos;
       token->type = DASH;
       token->literal = strdup("-");
-      printf("befioreDA %ld\n", sizeof(token));
       DA_push(tokens, token);
-      token_print(token);
-      //printf(" %c", '-');
-      fflush(stdout);
-      //free_token(&token);
       break;
     }
     case ' ':
       break;
     case ';':{
-      Token token;
-      token.start = scanner.pos;
-      token.end = scanner.pos;
-      token.type = SEMICOLON;
-      token.literal = strdup(";");
-      token_print(&token);
-      free_token(&token);
+      Token *token;
+      token = Token_new();
+      token->start = scanner.pos;
+      token->end = scanner.pos;
+      token->type = SEMICOLON;
+      token->literal = strdup(";");
+      DA_push(tokens, token);
       break;
     }
     case '.':{
-      Token token;
-      token.start = scanner.pos;
-      token.end = scanner.pos;
-      token.type = DOT;
-      token.literal = strdup(".");
-      token_print(&token);
-      free_token(&token);
+      Token *token;
+      token = Token_new();
+      token->start = scanner.pos;
+      token->end = scanner.pos;
+      token->type = DOT;
+      token->literal = strdup(".");
+      DA_push(tokens, token);
       break;
     }
     case '~':{
-      Token token;
-      token.start = scanner.pos;
-      token.end = scanner.pos;
-      token.type = TILDA;
-      token.literal = strdup("~");
-      token_print(&token);
-      free_token(&token);
+      Token *token;
+      token = Token_new();
+      token->start = scanner.pos;
+      token->end = scanner.pos;
+      token->type = TILDA;
+      token->literal = strdup("~");
+      DA_push(tokens, token);
       break;
     }
     case '/':{
-      Token token;
-      token.start = scanner.pos;
-      token.end = scanner.pos;
-      token.type = SLASH;
-      token.literal = strdup(".");
-      token_print(&token);
-      free_token(&token);
+      Token *token;
+      token = Token_new();
+      token->start = scanner.pos;
+      token->end = scanner.pos;
+      token->type = SLASH;
+      token->literal = strdup(".");
+      DA_push(tokens, token);
       break;
     }
     default:
       if (shouldTokenizeAsStr(c)) {
         int start = scanner.pos;
         while (isPeekChar(&scanner) == 1) {
-          char cc = peekChar(&scanner);
+          peekChar(&scanner);
         }
         int end = scanner.pos;
-        Token token;
-        token.start = start;
-        token.end = end;
-        token.type = STRING;
-
-        token.literal = slice_str(scanner.input, start, end);
-        token_print(&token);
-        free_token(&token);
+        Token *token;
+        token = Token_new();
+        token->start = start;
+        token->end = end;
+        token->type = STRING;
+        token->literal = slice_str(scanner.input, start, end);
+        DA_push(tokens, token);
       }
     }
   }
 }
 
-int main(int argc, char **argv) {
+//int main(int argc, char **argv) {
+#ifdef __TESTINNG_LEXER__
+int main() {
   DA *da;
   da = DA_new();
   printf("[len: %d] [capacity: %d]\n",DA_size(da), da->capacity);
   read_commands(da, "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .");
   // read_commands(da, "find -pingiiiiiii");
-  printf("OK\n");
-  printf("[len: %d] [capacity: %d]",DA_size(da), da->capacity);
-  // for(int j = 0; j < DA_size(da); j++){
-  //   Token_free(da->items[j]);
-  // }
+  printf("[len: %d] [capacity: %d]\n",DA_size(da), da->capacity);
+  for(int j = 0; j < DA_size(da); j++){
+    Token_print(da->items[j]);
+    Token_free(da->items[j]);
+  }
   DA_free(da);
+  printf("OK\n");
 }
+#endif
