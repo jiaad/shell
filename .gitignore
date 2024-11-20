@@ -1,0 +1,4 @@
+*.plist
+output
+bin
+*.o
