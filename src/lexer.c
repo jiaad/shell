@@ -6,6 +6,7 @@
 #include "shell.h"
 #include "lexer.h"
 #include "token.h"
+#define _POSIX_C_SOURCE 200809L
 // ls -a
 // touch file.c
 // mkaidr jiad123
@@ -30,7 +31,12 @@ int cs_strlen(char *str){
 }
 
 int shouldTokenizeAsStr(char c) {
-  if (isalpha(c)){
+  int should_skip = c == ' ' || c == '\t';
+  if(should_skip == 1){
+    return 0;
+  }
+  int is_ascii = c >= 0x00 && c < 0x7f;
+  if(is_ascii == 1){
     return 1;
   }
   return 0;
@@ -105,20 +111,23 @@ void read_commands(DA *tokens, char *command) {
   scanner.nextPos = 0;
   scanner.input = command;
 
+  // inside string
   char c;
   while ((c = peekChar(&scanner)) > -1) {
     switch (c) {
-    case '-': {
-      Token *token;
-      token = Token_new();
-      token->start = scanner.pos;
-      token->end = scanner.pos;
-      token->type = DASH;
-      token->literal = strdup("-");
-      DA_push(tokens, token);
-      break;
-    }
+    // case '-': {
+    //   Token *token;
+    //   token = Token_new();
+    //   token->start = scanner.pos;
+    //   token->end = scanner.pos;
+    //   token->type = DASH;
+    //   token->literal = strdup("-");
+    //   DA_push(tokens, token);
+    //   break;
+    // }
     case ' ':
+    case '\t':
+    case '\n':
       break;
     case ';':{
       Token *token;
@@ -130,36 +139,36 @@ void read_commands(DA *tokens, char *command) {
       DA_push(tokens, token);
       break;
     }
-    case '.':{
-      Token *token;
-      token = Token_new();
-      token->start = scanner.pos;
-      token->end = scanner.pos;
-      token->type = DOT;
-      token->literal = strdup(".");
-      DA_push(tokens, token);
-      break;
-    }
-    case '~':{
-      Token *token;
-      token = Token_new();
-      token->start = scanner.pos;
-      token->end = scanner.pos;
-      token->type = TILDA;
-      token->literal = strdup("~");
-      DA_push(tokens, token);
-      break;
-    }
-    case '/':{
-      Token *token;
-      token = Token_new();
-      token->start = scanner.pos;
-      token->end = scanner.pos;
-      token->type = SLASH;
-      token->literal = strdup("/");
-      DA_push(tokens, token);
-      break;
-    }
+    // case '.':{
+    //   Token *token;
+    //   token = Token_new();
+    //   token->start = scanner.pos;
+    //   token->end = scanner.pos;
+    //   token->type = DOT;
+    //   token->literal = strdup(".");
+    //   DA_push(tokens, token);
+    //   break;
+    // }
+    // case '~':{
+    //   Token *token;
+    //   token = Token_new();
+    //   token->start = scanner.pos;
+    //   token->end = scanner.pos;
+    //   token->type = TILDA;
+    //   token->literal = strdup("~");
+    //   DA_push(tokens, token);
+    //   break;
+    // }
+    // case '/':{
+    //   Token *token;
+    //   token = Token_new();
+    //   token->start = scanner.pos;
+    //   token->end = scanner.pos;
+    //   token->type = SLASH;
+    //   token->literal = strdup("/");
+    //   DA_push(tokens, token);
+    //   break;
+    // }
     default:{
       if (shouldTokenizeAsStr(c)) {
         int start = scanner.pos;
