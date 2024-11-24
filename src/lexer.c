@@ -31,7 +31,7 @@ int cs_strlen(char *str){
 }
 
 int shouldTokenizeAsStr(char c) {
-  int should_skip = c == ' ' || c == '\t';
+  int should_skip = c == ' ' || c == '\t' || c == '\b';
   if(should_skip == 1){
     return 0;
   }
@@ -128,6 +128,7 @@ void read_commands(DA *tokens, char *command) {
     case ' ':
     case '\t':
     case '\n':
+    case '\b':
       break;
     case ';':{
       Token *token;
