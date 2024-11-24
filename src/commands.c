@@ -20,6 +20,17 @@ DA *extract_commands_from_dir(char *path){
   return commands;
 }
 
+void Commands_free(DA *commands){
+  int i;
+  i = 0;
+
+  while(i < DA_size(commands)){
+    free(commands->items[i]);
+    i++;
+  }
+  DA_free(commands);
+}
+
 int does_exist_in_commands(char *command, DA *commands){
   int i;
 

@@ -10,6 +10,7 @@
 
 
 DA *extract_commands_from_dir(char *path);
+void Commands_free(DA *commands);
 int does_exist_in_commands(char *command, DA *commands);
 char *command_concat(char *s1, char *s2);
 #endif

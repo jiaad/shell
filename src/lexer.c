@@ -115,16 +115,6 @@ void read_commands(DA *tokens, char *command) {
   char c;
   while ((c = peekChar(&scanner)) > -1) {
     switch (c) {
-    // case '-': {
-    //   Token *token;
-    //   token = Token_new();
-    //   token->start = scanner.pos;
-    //   token->end = scanner.pos;
-    //   token->type = DASH;
-    //   token->literal = strdup("-");
-    //   DA_push(tokens, token);
-    //   break;
-    // }
     case ' ':
     case '\t':
     case '\n':
@@ -140,36 +130,6 @@ void read_commands(DA *tokens, char *command) {
       DA_push(tokens, token);
       break;
     }
-    // case '.':{
-    //   Token *token;
-    //   token = Token_new();
-    //   token->start = scanner.pos;
-    //   token->end = scanner.pos;
-    //   token->type = DOT;
-    //   token->literal = strdup(".");
-    //   DA_push(tokens, token);
-    //   break;
-    // }
-    // case '~':{
-    //   Token *token;
-    //   token = Token_new();
-    //   token->start = scanner.pos;
-    //   token->end = scanner.pos;
-    //   token->type = TILDA;
-    //   token->literal = strdup("~");
-    //   DA_push(tokens, token);
-    //   break;
-    // }
-    // case '/':{
-    //   Token *token;
-    //   token = Token_new();
-    //   token->start = scanner.pos;
-    //   token->end = scanner.pos;
-    //   token->type = SLASH;
-    //   token->literal = strdup("/");
-    //   DA_push(tokens, token);
-    //   break;
-    // }
     default:{
       if (shouldTokenizeAsStr(c)) {
         int start = scanner.pos;

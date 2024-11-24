@@ -36,13 +36,13 @@ void readline(char buf[]){
     if (newline_started == 0 && !bs && c is NEWLINE) {
         break;
     }
-    write(STDOUT_FILENO, &c, 1);
+  //  write(STDOUT_FILENO, &c, 1);
     buf[bytes_counter] = c;
     if (c != NEWLINE)
       bytes_counter++;
   }
   buf[bytes_counter] = '\0';
-  write(STDOUT_FILENO, "\n", 1);
+  //write(STDOUT_FILENO, "\n", 1);
 }
 
 

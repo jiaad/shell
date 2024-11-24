@@ -20,14 +20,8 @@ void run_command(DA *ARGS){
   DA_free(ARGS);
   if(res != NULL)
     free(res);
-  for(int i = 0; i < DA_size(sys_comm); i++){
-    free(sys_comm->items[i]);
-  }
-  DA_free(sys_comm);
+  Commands_free(sys_comm);
   exit(1);
-
-
-  // free DA
 }
 
 
@@ -56,7 +50,6 @@ DA *parse_tokens(DA *tokens){
 
 int main(){
   printf("WELCOME\n");
-
   while(1){
     DA *tokens;
     tokens = DA_new();
@@ -65,25 +58,17 @@ int main(){
     prompt_line();
     readline(buf);
     // CHAGE read_commands to something else
-    read_commands(tokens, buf);//"find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .");
-    // read_commands(da, "find -pingiiiiiii");
+    read_commands(tokens, buf);
     DA *ARGS = parse_tokens(tokens);
-    // HERE GOES THE LOGIC OF FORK EXEC
     pid_t pid = Fork();
-    if(pid == 0){
-      run_command(ARGS);
-    }
+    if(pid == 0) run_command(ARGS);
     wait(NULL);
     for(int j = 0; j < DA_size(tokens); j++){
-      Token_print(tokens->items[j]);
       Token_free(tokens->items[j]);
     }
     DA_free(tokens);
-    // free ARGS
     DA_free(ARGS);
     free(buf);
-    printf("OK\n");
   }
   return 0;
-
 }
