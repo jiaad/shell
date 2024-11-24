@@ -41,16 +41,12 @@ DA *parse_tokens(DA *tokens){
     ARGS->items[i] = NULL; 
     i++;
   }
-  return ARGS;
-  // free args
+  return ARGS; // FREE ARGS
 }
 
 
 // int main(int argc, char **argv, char **envp){
-
-int main(){
-  printf("WELCOME\n");
-  while(1){
+void command_exec(){
     DA *tokens;
     tokens = DA_new();
     char *buf;
@@ -69,6 +65,12 @@ int main(){
     DA_free(tokens);
     DA_free(ARGS);
     free(buf);
+}
+
+int main(){
+  printf("WELCOME\n");
+  while(1){
+    command_exec();
   }
   return 0;
 }
