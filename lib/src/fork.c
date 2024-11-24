@@ -1,6 +1,4 @@
-#include <unistd.h>
-#include <sys/types.h>
-
+#include "fork.h"
 
 int Fork(){
   pid_t pid = fork();
