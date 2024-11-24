@@ -14,6 +14,7 @@
 #include "lexer.h"
 #include "../lib/src/error.h"
 #include "../lib/src/fork.h"
+#include "../src/commands.h"
 
 #define _XOPEN_SOURCE  500
 #define _POSIX_C_SOURCE 200809L

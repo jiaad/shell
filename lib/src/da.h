@@ -1,3 +1,5 @@
+#ifndef __DA__
+#define __DA__
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,3 +26,4 @@ void *DA_set(DA *da, int idx, void *x);
 int DA_size(DA *da);
 
 
+#endif
