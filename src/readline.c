@@ -41,6 +41,13 @@ void readline(char buf[]){
     if (c != NEWLINE)
       bytes_counter++;
   }
+  if(bytes_read == 0){
+    // EOF ?
+    printf("sooooo\n");
+    exit(EXIT_SUCCESS);
+
+  }
+  printf("bytes read: %ld\n", bytes_read);
   buf[bytes_counter] = '\0';
   //write(STDOUT_FILENO, "\n", 1);
 }

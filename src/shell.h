@@ -6,8 +6,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 #include <ctype.h>
 #include <string.h>
+#include <signal.h>
 #include "../lib/src/da.h"
 #include "token.h"
 #include "readline.h"
@@ -15,6 +17,7 @@
 #include "../lib/src/error.h"
 #include "../lib/src/fork.h"
 #include "../src/commands.h"
+#include <setjmp.h>
 
 #define _XOPEN_SOURCE  500
 #define _POSIX_C_SOURCE 200809L
