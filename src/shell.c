@@ -29,9 +29,19 @@ void sig_handler(int sig){
 */
 
 void sig_handler(int sig){
-  printf("here inside sig_handler child_pid: %d sig: %d<->%d\n", child_pid, sig, SIGINT);
-  if(sig == SIGINT){
-    printf("EXIT[]\n");
+  printf("here inside sig_handler child_pid: %d sig: %d<->%d is_force_exit_shell: %d\n", child_pid, sig, SIGINT, force_exit_shell);
+  if(sig == SIGTERM && child_pid == 0){
+    printf("EXIT SIGTERM\n");
+    exit(EXIT_SUCCESS);
+  }
+  if(sig == SIGINT && child_pid){
+    printf("child [%d] should exit\n", getpid() );
+    while(wait(NULL) > 0);
+    exit(EXIT_SUCCESS);
+  } else if(sig == SIGINT && child_pid == 0 && force_exit_shell == 0){
+    //while(wait(NULL) > 0);
+    printf("EXIT main\n");
+    //exit(EXIT_SUCCESS);
 //    exit(EXIT_SUCCESS);
     //kill(shell_pid, SIGKILL);
     //longjmp(sigint_buf, 1);
@@ -119,16 +129,16 @@ void command_exec(){
       // EXIT COMMAND
       if(is_exit_command((char*)ARGS->items[0])){
         force_exit_shell = 1;
-        printf("exiting uwu: %d\n", child_pid);
-        kill(shell_pid, SIGKILL);
+        printf("exiting uwu: %d - is force: %d\n", child_pid, force_exit_shell);
+        kill(shell_pid,SIGTERM);
         exit(EXIT_SUCCESS);
       }
-      printf("i am get pid: %d\n", child_pid);
+      printf("i am child pid: %d\n", child_pid);
       run_command(ARGS); // RUN COMMAND
       while(waitpid(-1, NULL, 0) < 0){
         printf("[%d]: killed\n", 0 );
       }
-      wait(NULL);
+      //wait(NULL);
       //child_pid = 0;
       for(int j = 0; j < DA_size(tokens); j++){
         Token_free(tokens->items[j]);
@@ -142,14 +152,16 @@ void command_exec(){
 int main(){
   printf("WELCOME %d\n", getpid());
   shell_pid = getpid();
-  // struct sigaction sig = {0};
-  // sig.sa_handler = sig_handler;
-  // sigemptyset(&sig.sa_mask);
-  // sig.sa_flags = SA_SIGINFO | SA_RESTART;
-  //
-  // //memset(&sig, 0, sizeof sig);
-  // sigaction(SIGINT, &sig, NULL);
-  // sigaction(SIGQUIT, &sig, NULL);
+  struct sigaction sig = {0};
+  sig.sa_handler = sig_handler;
+  sigemptyset(&sig.sa_mask);
+  //sig.sa_flags = SA_SIGINFO | SA_RESTART;
+  sig.sa_flags = SA_SIGINFO ;
+
+  //memset(&sig, 0, sizeof sig);
+  sigaction(SIGINT, &sig, NULL);
+  sigaction(SIGQUIT, &sig, NULL);
+  sigaction(SIGTERM, &sig, NULL);
 
   switch(setjmp(sigint_buf)){
     case 0: {
