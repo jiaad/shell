@@ -40,14 +40,22 @@ void sig_handler(int sig) {
   }
 }
 
-int special_commands(char *command) {
-  char *commands[] = {"exit", 0};
+int builtin_commands(char *command) {
+  char *commands[] = {"cd", 0};
   char **ptr = commands;
   while (*ptr != 0) {
     if (strcmp(*ptr, command) == 0) {
       return 1;
     }
     ptr++;
+  }
+  return 0;
+}
+
+
+int is_cd(char *str){
+  if(strcmp(str, "cd") == 0){
+    return 1;
   }
   return 0;
 }
@@ -64,13 +72,20 @@ void run_command(DA *ARGS) {
   if (ARGS == NULL) {
     exit(1);
   }
-  DA *sys_comm = extract_commands_from_dir("/usr/bin");
-  if (does_exist_in_commands((char *)ARGS->items[0], sys_comm) == 1) {
+  // if(builtin_commands((char *)ARGS->items[0])){
+  //   printf("herhehrehrh");
+  //   res = command_concat("./bin/", (char *)ARGS->items[0]);
+  //   free(ARGS->items[0]);
+  //   ARGS->items[0] = res;
+  // }
+  DA *sys_comm = extract_commands_from_dir("/usr/bin/");
+  if (res == NULL && does_exist_in_commands((char *)ARGS->items[0], sys_comm) == 1) {
+    printf("herhehrehrh");
     res = command_concat("/usr/bin/", (char *)ARGS->items[0]);
     free(ARGS->items[0]);
     ARGS->items[0] = res;
   }
-  printf(":::::%s:::\n", (char *)ARGS->items[0]);
+  printf(":::::%s:::%s\n", (char *)ARGS->items[0],res);
   child_pid = getpid();
   execve((char *)ARGS->items[0], (char **)ARGS->items, NULL);
   perror("SHELL");
@@ -121,6 +136,11 @@ void command_exec() {
     exit(EXIT_SUCCESS);
   }
 
+  if(is_cd((char *)ARGS->items[0])){
+    my_cd(DA_size(ARGS), (char**)ARGS->items);
+    return;
+  }
+
   pid_t pid = Fork();
   if (pid == 0) {
     child_pid = getpid();
@@ -158,7 +178,7 @@ int main() {
     // printf("starting\n");
     if(sigsetjmp(sigint_buf,1) == 0){
       command_exec();
-      while (waitpid(-1, NULL, 0) < 0) {
+      while (waitpid(-1, NULL, 0) > 0) {
         printf("terminated from parent \n");
       }
     }

@@ -22,6 +22,6 @@
 #define _XOPEN_SOURCE  500
 #define _POSIX_C_SOURCE 200809L
 #define _POSIX_C_SOURCE 200809L
-
+int my_cd(int len, char *args[]);
 #define _SVID_SOURCE
 #endif
