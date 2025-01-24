@@ -10,6 +10,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <signal.h>
+#include <setjmp.h>
+// ------------------------------------
 #include "../lib/src/da.h"
 #include "token.h"
 #include "readline.h"
@@ -17,7 +19,7 @@
 #include "../lib/src/error.h"
 #include "../lib/src/fork.h"
 #include "../src/commands.h"
-#include <setjmp.h>
+#include "../lib/src/signal.h"
 
 #define _XOPEN_SOURCE  500
 #define _POSIX_C_SOURCE 200809L
