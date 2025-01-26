@@ -1,6 +1,7 @@
 #ifndef __TOKEN__
 #define __TOKEN__
 #include "shell.h"
+#include "../lib/src/da.h"
 // ls -a
 // touch file.c
 // mkaidr jiad123
@@ -38,4 +39,5 @@ typedef struct Token {
 Token *Token_new();
 void Token_print(Token *token);
 void Token_free(Token *token);
+void Token_free_all(DA *tokens);
 #endif

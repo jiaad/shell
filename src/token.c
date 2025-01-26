@@ -31,3 +31,14 @@ void Token_free(Token *token) {
   free(token);
 }
 
+void Token_free_all(DA *tokens){
+  int i;
+  int len;
+
+  len = DA_size(tokens);
+  i = 0;
+  for(i = 0; i < len; i++){
+    Token_free(tokens->items[i]);
+  }
+  DA_free(tokens);
+}

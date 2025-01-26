@@ -6,5 +6,5 @@
 #define NEWLINE 10
 
 void prompt_line();
-void readline(char buf[]);
+int readline(char buf[]);
 #endif

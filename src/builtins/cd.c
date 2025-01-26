@@ -15,7 +15,10 @@ int my_cd(int len, char *args[]){
   }
   char buf[500];
   if (len == 2){
-    getcwd(buf, 499);
+    if(getcwd(buf, 499) == NULL){
+      printf("GETCWD ERROR\n");
+      return 0;
+    }
     char *comm = command_concat(buf, (char*)args[1]);
     printf("TODO: ADD GOTO ROOT: %s\n", comm);
     int res = chdir((char *)args[1]);

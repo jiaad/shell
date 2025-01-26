@@ -8,7 +8,6 @@ int savesigns = 1;
 volatile sig_atomic_t shell_pid = 0;
 volatile sig_atomic_t should_force_exit = 0;
 volatile sig_atomic_t child_pid = 0;
-volatile sig_atomic_t force_exit_shell = 0;
 jmp_buf sigint_buf;
 
 /*
@@ -35,8 +34,13 @@ void sig_handler(int sig) {
   //        "is_force_exit_shell: %d\n",
   //        child_pid, sig, SIGINT, force_exit_shell);
   if (sig == SIGINT && child_pid == 0) {
-    siglongjmp(sigint_buf, -1);
+    siglongjmp(sigint_buf, 1);
     return;
+  }
+  if (sig == SIGINT && child_pid != 0){
+    if(kill(child_pid, SIGINT) < 0){
+      perror("ERROR SENDING SIGINT TO CHLD");
+    }
   }
 }
 
@@ -108,36 +112,47 @@ DA *parse_tokens(DA *tokens) {
     }
     i++;
   }
-  while (i < ARGS->capacity) {
-    ARGS->items[i] = NULL;
-    i++;
-  }
+  ARGS->items[i] = NULL;
+  // while (i < ARGS->capacity) {
+  //   ARGS->items[i] = NULL; // OPTIMIZE THE LOOP
+  //   i++;
+  // }
   return ARGS; // FREE ARGS
 }
 
 // int main(int argc, char **argv, char **envp){
 void command_exec() {
-  //child_pid = getpid();
   DA *tokens;
-  tokens = DA_new();
-  char *buf;
-  buf = malloc(sizeof(char) * 1024);
+  char buf[1024];
+  int buf_len;
+
   prompt_line();
-  readline(buf);
+  buf_len = readline(buf);
+  if(buf_len == 0) return;
+
+  tokens = DA_new();
   // CHAGE read_commands to something else
   read_commands(tokens, buf);
   DA *ARGS = parse_tokens(tokens);
 
+  // EMPTY
+  printf("----------- DA_SIZE(%d):%d\n", DA_size(ARGS), buf[0]);
+  if(DA_size(ARGS) == 0){
+    printf("-----------\n");
+    return;
+  }
+
   // EXIT COMMAND
   if (is_exit_command((char *)ARGS->items[0])) {
-    force_exit_shell = 1;
-    printf("exiting uwu: %d - is force: %d\n", child_pid, force_exit_shell);
-    //  kill(shell_pid, SIGTERM);
+    Token_free_all(tokens);
+    DA_free(ARGS);
     exit(EXIT_SUCCESS);
   }
 
   if(is_cd((char *)ARGS->items[0])){
     my_cd(DA_size(ARGS), (char**)ARGS->items);
+    Token_free_all(tokens);
+    DA_free(ARGS);
     return;
   }
 
@@ -145,56 +160,47 @@ void command_exec() {
   if (pid == 0) {
     child_pid = getpid();
     printf("i am child pid: %d\n", child_pid);
+    printf("doesnot come here\n");
     run_command(ARGS); // RUN COMMAND
+    printf("doesnot come here\n");
     while (waitpid(-1, NULL, 0) < 0) {
       printf("[%d]: killed\n", 0);
     }
-    // wait(NULL);
-    // child_pid = 0;
-    for (int j = 0; j < DA_size(tokens); j++) {
-      Token_free(tokens->items[j]);
-    }
-    DA_free(tokens);
+    Token_free_all(tokens);
     DA_free(ARGS);
-    free(buf);
+  } else {
+    Token_free_all(tokens);
+    DA_free(ARGS);
+
   }
 }
 
 int main() {
   printf("WELCOME %d\n", getpid());
   shell_pid = getpid();
-  struct sigaction sig = {0};
-  sig.sa_handler = sig_handler;
-  sigemptyset(&sig.sa_mask);
-  sig.sa_flags = SA_SIGINFO | SA_RESTART;
-  //sig.sa_flags = SA_SIGINFO;
+  int status;
+  //Signal(SIGINT, sig_handler);
+  Signal(SIGQUIT, sig_handler);
+  Signal(SIGTERM, sig_handler);
 
-  // memset(&sig, 0, sizeof sig);
-  sigaction(SIGINT, &sig, NULL);
-  sigaction(SIGQUIT, &sig, NULL);
-  sigaction(SIGTERM, &sig, NULL);
+  if(!sigsetjmp(sigint_buf, 1)){
+  //  sigaction(SIGINT, &sig, NULL);
+  Signal(SIGINT, sig_handler);
+
+    printf("STARTING\n");
+  }else {
+    printf("new prompt init\n");
+  }
 
   while (1) {
     // printf("starting\n");
-    if(sigsetjmp(sigint_buf,1) == 0){
       command_exec();
-      while (waitpid(-1, NULL, 0) > 0) {
-        printf("terminated from parent \n");
-      }
+      // while (waitpid(-1, NULL, 0) > 0) {
+      //   printf("terminated from parent \n");
+      // }
+      while (waitpid(-1, &status, 0) > 0) {
+        printf("terminated from parent : WIFEXITED(%d) WEXITSTATUS(%d)\n", WIFEXITED(status), WEXITSTATUS(status));
     }
-    printf("new prompt init\n");
-    // switch (sigsetjmp(sigint_buf, savesigns)) {
-    // case 0: {
-    //   command_exec();
-    //   while (waitpid(-1, NULL, 0) < 0) {
-    //     printf("terminated from parent \n");
-    //   }
-    //   break;
-    // }
-    // case 1:
-    //   printf("new prompt init\n");
-    //   break;
-    // }
   }
 
   return 0;

@@ -7,7 +7,7 @@ void prompt_line(){
   fflush(stdout);
 }
 
-void readline(char buf[]){
+int readline(char buf[]){
   // read until the end
   size_t bytes_read;
   int newline_started = 0;
@@ -28,9 +28,9 @@ void readline(char buf[]){
       newline_started = 0;
     }
     if (c is NEWLINE && newline_started) {
-      write(STDOUT_FILENO, "here ", 5);
+      (void)!write(STDOUT_FILENO, "here ", 5);
       newline_started = 0;
-      write(STDOUT_FILENO, "\n> ", 2);
+      (void)!write(STDOUT_FILENO, "\n> ", 3);
       continue;
     }
     if (newline_started == 0 && !bs && c is NEWLINE) {
@@ -50,6 +50,7 @@ void readline(char buf[]){
   printf("bytes read: %ld\n", bytes_read);
   buf[bytes_counter] = '\0';
   //write(STDOUT_FILENO, "\n", 1);
+  return bytes_counter;
 }
 
 
