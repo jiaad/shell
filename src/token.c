@@ -26,6 +26,7 @@ Token *Token_new(){
 void Token_print(Token *token) { 
   printf("{literal: %s}\n", token->literal); 
 }
+
 void Token_free(Token *token) { 
   free(token->literal);
   free(token);

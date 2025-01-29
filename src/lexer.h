@@ -1,6 +1,7 @@
 
 #ifndef __LEXER__
 #define __LEXER__
+#include "../lib/src/da.h"
 
 typedef struct Scanner {
   int pos;

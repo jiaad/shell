@@ -1,6 +1,6 @@
 #ifndef __TOKEN__
 #define __TOKEN__
-#include "shell.h"
+// #include "shell.h"
 #include "../lib/src/da.h"
 // ls -a
 // touch file.c
@@ -25,7 +25,8 @@ typedef enum tokens {
   POINT,
   DOT,
   SLASH,
-  TILDA
+  TILDA,
+  PIPE
 } tokens_t;
 
 typedef struct Token {
@@ -34,7 +35,6 @@ typedef struct Token {
   char *literal;
   tokens_t type;
 } Token;
-
 
 Token *Token_new();
 void Token_print(Token *token);

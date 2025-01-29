@@ -1,6 +1,4 @@
 #include "shell.h"
-#include "readline.h"
-#include <setjmp.h>
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -37,8 +35,8 @@ void sig_handler(int sig) {
     siglongjmp(sigint_buf, 1);
     return;
   }
-  if (sig == SIGINT && child_pid != 0){
-    if(kill(child_pid, SIGINT) < 0){
+  if (sig == SIGINT && child_pid != 0) {
+    if (kill(child_pid, SIGINT) < 0) {
       perror("ERROR SENDING SIGINT TO CHLD");
     }
   }
@@ -56,9 +54,8 @@ int builtin_commands(char *command) {
   return 0;
 }
 
-
-int is_cd(char *str){
-  if(strcmp(str, "cd") == 0){
+int is_cd(char *str) {
+  if (strcmp(str, "cd") == 0) {
     return 1;
   }
   return 0;
@@ -83,13 +80,14 @@ void run_command(DA *ARGS) {
   //   ARGS->items[0] = res;
   // }
   DA *sys_comm = extract_commands_from_dir("/usr/bin/");
-  if (res == NULL && does_exist_in_commands((char *)ARGS->items[0], sys_comm) == 1) {
+  if (res == NULL &&
+      does_exist_in_commands((char *)ARGS->items[0], sys_comm) == 1) {
     printf("herhehrehrh");
     res = command_concat("/usr/bin/", (char *)ARGS->items[0]);
     free(ARGS->items[0]);
     ARGS->items[0] = res;
   }
-  printf(":::::%s:::%s\n", (char *)ARGS->items[0],res);
+  printf(":::::%s:::%s\n", (char *)ARGS->items[0], res);
   child_pid = getpid();
   execve((char *)ARGS->items[0], (char **)ARGS->items, NULL);
   perror("SHELL");
@@ -100,25 +98,25 @@ void run_command(DA *ARGS) {
   exit(1);
 }
 
-DA *parse_tokens(DA *tokens) {
-  int i, len;
-  DA *ARGS;
-  ARGS = DA_new();
-  len = DA_size(tokens);
-  i = 0;
-  while (i < len) {
-    if (((Token *)(tokens->items[i]))->literal) {
-      DA_push(ARGS, ((Token *)(tokens->items[i]))->literal);
-    }
-    i++;
-  }
-  ARGS->items[i] = NULL;
-  // while (i < ARGS->capacity) {
-  //   ARGS->items[i] = NULL; // OPTIMIZE THE LOOP
-  //   i++;
-  // }
-  return ARGS; // FREE ARGS
-}
+// DA *parse_tokens(DA *tokens) {
+//   int i, len;
+//   DA *ARGS;
+//   ARGS = DA_new();
+//   len = DA_size(tokens);
+//   i = 0;
+//   while (i < len) {
+//     if (((Token *)(tokens->items[i]))->literal) {
+//       DA_push(ARGS, ((Token *)(tokens->items[i]))->literal);
+//     }
+//     i++;
+//   }
+//   ARGS->items[i] = NULL;
+//   // while (i < ARGS->capacity) {
+//   //   ARGS->items[i] = NULL; // OPTIMIZE THE LOOP
+//   //   i++;
+//   // }
+//   return ARGS; // FREE ARGS
+// }
 
 // int main(int argc, char **argv, char **envp){
 void command_exec() {
@@ -128,7 +126,8 @@ void command_exec() {
 
   prompt_line();
   buf_len = readline(buf);
-  if(buf_len == 0) return;
+  if (buf_len == 0)
+    return;
 
   tokens = DA_new();
   // CHAGE read_commands to something else
@@ -137,7 +136,7 @@ void command_exec() {
 
   // EMPTY
   printf("----------- DA_SIZE(%d):%d\n", DA_size(ARGS), buf[0]);
-  if(DA_size(ARGS) == 0){
+  if (DA_size(ARGS) == 0) {
     printf("-----------\n");
     return;
   }
@@ -149,8 +148,8 @@ void command_exec() {
     exit(EXIT_SUCCESS);
   }
 
-  if(is_cd((char *)ARGS->items[0])){
-    my_cd(DA_size(ARGS), (char**)ARGS->items);
+  if (is_cd((char *)ARGS->items[0])) {
+    my_cd(DA_size(ARGS), (char **)ARGS->items);
     Token_free_all(tokens);
     DA_free(ARGS);
     return;
@@ -160,7 +159,6 @@ void command_exec() {
   if (pid == 0) {
     child_pid = getpid();
     printf("i am child pid: %d\n", child_pid);
-    printf("doesnot come here\n");
     run_command(ARGS); // RUN COMMAND
     printf("doesnot come here\n");
     while (waitpid(-1, NULL, 0) < 0) {
@@ -171,7 +169,6 @@ void command_exec() {
   } else {
     Token_free_all(tokens);
     DA_free(ARGS);
-
   }
 }
 
@@ -179,27 +176,28 @@ int main() {
   printf("WELCOME %d\n", getpid());
   shell_pid = getpid();
   int status;
-  //Signal(SIGINT, sig_handler);
+  // Signal(SIGINT, sig_handler);
   Signal(SIGQUIT, sig_handler);
   Signal(SIGTERM, sig_handler);
 
-  if(!sigsetjmp(sigint_buf, 1)){
-  //  sigaction(SIGINT, &sig, NULL);
-  Signal(SIGINT, sig_handler);
+  if (!sigsetjmp(sigint_buf, 1)) {
+    //  sigaction(SIGINT, &sig, NULL);
+    Signal(SIGINT, sig_handler);
 
     printf("STARTING\n");
-  }else {
+  } else {
     printf("new prompt init\n");
   }
 
   while (1) {
     // printf("starting\n");
-      command_exec();
-      // while (waitpid(-1, NULL, 0) > 0) {
-      //   printf("terminated from parent \n");
-      // }
-      while (waitpid(-1, &status, 0) > 0) {
-        printf("terminated from parent : WIFEXITED(%d) WEXITSTATUS(%d)\n", WIFEXITED(status), WEXITSTATUS(status));
+    command_exec();
+    // while (waitpid(-1, NULL, 0) > 0) {
+    //   printf("terminated from parent \n");
+    // }
+    while (waitpid(-1, &status, 0) > 0) {
+      printf("terminated from parent : WIFEXITED(%d) WEXITSTATUS(%d)\n",
+             WIFEXITED(status), WEXITSTATUS(status));
     }
   }
 

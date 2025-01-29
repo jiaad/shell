@@ -1,11 +1,11 @@
+#include "lexer.h"
+#include "shell.h"
+#include "token.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "shell.h"
-#include "lexer.h"
-#include "token.h"
 #define _POSIX_C_SOURCE 200809L
 // ls -a
 // touch file.c
@@ -21,22 +21,22 @@
  * ]
  */
 
-
-
-
-int cs_strlen(char *str){
+int cs_strlen(char *str) {
   int i = 0;
-  while (str[i] != '\0') i++;
+  while (str[i] != '\0')
+    i++;
   return i;
 }
 
 int shouldTokenizeAsStr(char c) {
   int should_skip = c == ' ' || c == '\t' || c == '\b';
-  if(should_skip == 1){
+  if (should_skip == 1) {
     return 0;
   }
+  if (c == ';' || c == '|')
+    return 0;
   int is_ascii = c >= 0x00 && c < 0x7f;
-  if(is_ascii == 1){
+  if (is_ascii == 1) {
     return 1;
   }
   return 0;
@@ -82,21 +82,19 @@ int isPeekChar(Scanner *scanner) {
   return EOF;
 }
 
-void free_token(Token *token){
-  free(token->literal);
-}
+void free_token(Token *token) { free(token->literal); }
 
-char *slice_str(char *src, int start, int end){
+char *slice_str(char *src, int start, int end) {
   int len = (end - start) + 2;
   int i = 0;
   char *res = malloc(sizeof(char) * len);
-  if(res == NULL){
+  if (res == NULL) {
     unix_error("MALLOC FAILED on slice_str: ");
     return NULL;
   }
 
-  while(start <= end){
-    res[i++] = src[start++] ;
+  while (start <= end) {
+    res[i++] = src[start++];
   }
   res[i] = '\0';
   return res;
@@ -120,7 +118,17 @@ void read_commands(DA *tokens, char *command) {
     case '\n':
     case '\b':
       break;
-    case ';':{
+    case '|': {
+      Token *token;
+      token = Token_new();
+      token->start = scanner.pos;
+      token->end = scanner.pos;
+      token->type = PIPE;
+      token->literal = strdup("|");
+      DA_push(tokens, token);
+      break;
+    }
+    case ';': {
       Token *token;
       token = Token_new();
       token->start = scanner.pos;
@@ -130,7 +138,7 @@ void read_commands(DA *tokens, char *command) {
       DA_push(tokens, token);
       break;
     }
-    default:{
+    default: {
       if (shouldTokenizeAsStr(c)) {
         int start = scanner.pos;
         while (isPeekChar(&scanner) == 1) {
@@ -150,16 +158,18 @@ void read_commands(DA *tokens, char *command) {
   }
 }
 
-//int main(int argc, char **argv) {
-#ifdef __TESTINNG_LEXER__
+#define __TESTING_LEXER
+// int main(int argc, char **argv) {
+#ifdef __TESTING_LEXER__
 int main() {
   DA *da;
   da = DA_new();
-  printf("[len: %d] [capacity: %d]\n",DA_size(da), da->capacity);
-  read_commands(da, "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .");
+  printf("[len: %d] [capacity: %d]\n", DA_size(da), da->capacity);
+  read_commands(
+      da, "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .   | ls -al");
   // read_commands(da, "find -pingiiiiiii");
-  printf("[len: %d] [capacity: %d]\n",DA_size(da), da->capacity);
-  for(int j = 0; j < DA_size(da); j++){
+  printf("[len: %d] [capacity: %d]\n", DA_size(da), da->capacity);
+  for (int j = 0; j < DA_size(da); j++) {
     Token_print(da->items[j]);
     Token_free(da->items[j]);
   }
