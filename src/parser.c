@@ -116,11 +116,13 @@ Token *previous(store_t *store) {
  */
 DA *parser(DA *tokens) {
   store_t *store;
-  DA *stmts = DA_new();
+  DA *stmts;
+  int len;
+  stmts = DA_new();
   store = store_new(tokens);
   printf("starting: %d\n", DA_size(tokens));
 
-  int len = DA_size(tokens);
+ len = DA_size(tokens);
   while (store->idx < len - 1) {
     // EXPR
     DA *da;
@@ -134,9 +136,11 @@ DA *parser(DA *tokens) {
     // }
     // DA_free(da);
   };
-  if (strcmp("$", (char *)store->state->literal) == 0) {
-    printf("finished\n");
-  }
+
+  // if (strcmp("$", (char *)store->state->literal) == 0) {
+  //   printf("finished\n");
+  // }
+  free(store);
   return stmts;
 }
 
@@ -158,7 +162,7 @@ DA *command_extract(store_t *store) {
   DA *com = DA_new();
 
   while (store->state->type == STRING) {
-    DA_push(com, store->state->literal);
+    DA_push(com, strdup(store->state->literal));
     if (!matchType(store, store->state->type)) {
       return com;
     }
@@ -189,7 +193,7 @@ int main(void) {
   //     "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .   | ls -al");
   // read_commands(da, "find -pingiiiiiii");
 
-  read_commands(tokens, "ls -al | grep jiad");
+  read_commands(tokens, "ls -al -jiad | grep jiad | ping google.com");
   printf("[len: %d] [capacity: %d]\n", DA_size(tokens), tokens->capacity);
   for (int j = 0; j < DA_size(tokens); j++) {
     Token_print(tokens->items[j]);
@@ -203,7 +207,7 @@ int main(void) {
     statement_t *U_S = ((statement_t *)stmts->items[i]);
 
     printf("{commands: %d} \n", i);
-    for (int k = 0; k < DA_size(&U_S->commands[k]); k++) {
+    for (int k = 0; k < DA_size((DA*)U_S->commands); k++) {
 
       printf("--> command: %d\n", k);
 

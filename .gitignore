@@ -2,3 +2,5 @@
 output
 bin
 *.o
+a.out.*
+a.out

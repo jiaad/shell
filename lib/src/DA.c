@@ -68,8 +68,11 @@ void *DA_set(DA *da, int idx, void *x) {
 
 int DA_size(DA *da) { return da->size; }
 
-#ifdef TEST
+// #define  __DA_TEST__
+#ifdef __DA_TEST__
 int main(void) {
+  DA *stmts = DA_new();
+  DA *commands = DA_new();
   DA *da = DA_new();
 
   int twelve = 12;
@@ -86,6 +89,7 @@ int main(void) {
   char twentythree[] = "twentythree";
   float flt = 12.4;
   // DA_push(da, (void*)12);
+  //
 
 
   DA_push(da, &twelve);
@@ -101,6 +105,8 @@ int main(void) {
   DA_push(da, &twentytwo);
   DA_push(da, &twentythree);
   DA_push(da, &flt);
+  DA_push(commands, da);
+  DA_push(stmts, commands);
   // // assert(((int*)da->items)[0] == 12);
   // printf("res[0] = twelve -> %d\n", *(int*)da->items[0]);
   // // printf("res[0] -> %d\n", ((int*)da->items)[0]);
