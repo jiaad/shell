@@ -1,5 +1,14 @@
 #include "parser.h"
-
+#include "token.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+/*
+ * 1 - PIPE
+ * 2 - REDIRECTION
+ * 3 - COMMA SEPARATED
+ * 4 - AND OPERATOR
+ */
 DA *parse_tokens(DA *tokens) {
   int i, len;
   DA *ARGS;
@@ -19,3 +28,192 @@ DA *parse_tokens(DA *tokens) {
   // }
   return ARGS; // FREE ARGS
 }
+
+/*
+ *
+ *
+ *
+ *
+ */
+
+// pipe statement ?
+// parse pipe
+// parse string
+
+/**
+ *stmts = [
+ *  {
+ *    type: STATEMENT_TYPE,
+ *    commands: DA
+ *  },
+ *  {
+ *    type: STATEMENT_TYPE,
+ *    commands: DA
+ *  }
+ * ]
+ */
+
+statement_t *statement_new(DA *commands) {
+  statement_t *stmt;
+  stmt = malloc(sizeof(statement_t));
+  if (DA_size(commands) >= 2) {
+    stmt->type = PIPE_STATEMENT;
+  }
+  stmt->commands = commands;
+
+  return stmt;
+}
+
+store_t *store_new(DA *tokens) {
+  store_t *store;
+  store = malloc(sizeof(store_t));
+  if (store == NULL) {
+    printf("MALLOC_ERROR\n");
+    exit(EXIT_FAILURE);
+  }
+  store->idx = 0;
+  store->state = tokens->items[0];
+  store->tokens = tokens;
+  return store;
+}
+
+int match(store_t *store, char *str) {
+  int res = strcmp((char *)store->state->literal, str) == 0;
+  if (res) { // cmp str{
+    store->idx++;
+    store->state = (Token *)store->tokens->items[store->idx];
+    return 1;
+  }
+  return 0;
+}
+
+int matchType(store_t *store, enum tokens tok) {
+  if (store->idx == DA_size(store->tokens) - 1) {
+    printf("here\n");
+    return 0;
+  }
+
+  // for (int j = 0; j < DA_size(store->tokens); j++) {
+  //   Token_print(store->tokens->items[j]);
+  // }
+  int res = store->state->type == tok;
+  if (res) { // cmp str{
+    store->idx++;
+    store->state = (Token *)store->tokens
+                       ->items[store->idx]; // store->tokens->items[store->idx];
+    return 1;
+  }
+  return 0;
+}
+
+Token *previous(store_t *store) {
+  //
+  return store->tokens->items[store->idx - 1];
+}
+
+/* PARSER
+ *
+ */
+DA *parser(DA *tokens) {
+  store_t *store;
+  DA *stmts = DA_new();
+  store = store_new(tokens);
+  printf("starting: %d\n", DA_size(tokens));
+
+  int len = DA_size(tokens);
+  while (store->idx < len - 1) {
+    // EXPR
+    DA *da;
+    da = E(store);
+    statement_t *stmt = statement_new(da);
+    DA_push(stmts, stmt);
+    printf("printing commands [%d]\n", DA_size(da));
+    // for (int j = 0; j < DA_size(da); j++) {
+    //   printf("-> %s\n", (char *)da->items[j]);
+    //   // Token_free(da->items[j]);
+    // }
+    // DA_free(da);
+  };
+  if (strcmp("$", (char *)store->state->literal) == 0) {
+    printf("finished\n");
+  }
+  return stmts;
+}
+
+DA *E(store_t *store) {
+  printf("E---------------\n");
+  printf("indiddididi %d - %d\n", store->state->type, PIPE);
+  DA *commands = DA_new();
+  DA *prim = command_extract(store);
+  if (prim != NULL)
+    DA_push(commands, prim);
+  while (matchType(store, PIPE)) {
+    DA *comm = command_extract(store);
+    DA_push(commands, comm);
+  }
+  return commands;
+}
+
+DA *command_extract(store_t *store) {
+  DA *com = DA_new();
+
+  while (store->state->type == STRING) {
+    DA_push(com, store->state->literal);
+    if (!matchType(store, store->state->type)) {
+      return com;
+    }
+  }
+
+  return com;
+}
+char *primary(store_t *store) {
+  /**/
+  if (store->state->type == STRING) {
+    char *str = strdup(store->state->literal);
+    if (matchType(store, STRING))
+      return str;
+  }
+  printf("THIS IS BAD\n");
+  exit(EXIT_FAILURE);
+}
+
+#define __TESTING_PARSER__
+
+#ifdef __TESTING_PARSER__
+int main(void) {
+  DA *tokens;
+  tokens = DA_new();
+  printf("[len: %d] [capacity: %d]\n", DA_size(tokens), tokens->capacity);
+  // read_commands(
+  //     tokens,
+  //     "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .   | ls -al");
+  // read_commands(da, "find -pingiiiiiii");
+
+  read_commands(tokens, "ls -al | grep jiad");
+  printf("[len: %d] [capacity: %d]\n", DA_size(tokens), tokens->capacity);
+  for (int j = 0; j < DA_size(tokens); j++) {
+    Token_print(tokens->items[j]);
+    // Token_free(da->items[j]);
+  }
+  // DA_free(da);
+  printf("OK\n");
+  DA *stmts = parser(tokens);
+
+  for (int i = 0; i < DA_size(stmts); i++) {
+    statement_t *U_S = ((statement_t *)stmts->items[i]);
+
+    printf("{commands: %d} \n", i);
+    for (int k = 0; k < DA_size(&U_S->commands[k]); k++) {
+
+      printf("--> command: %d\n", k);
+
+      DA *M_S = U_S->commands->items[k];
+      for (int l = 0; l < DA_size(M_S); l++) {
+        printf("----> {k: %d} - {%s}\n", DA_size(M_S), (char *)M_S->items[l]);
+      }
+    }
+  }
+
+  return 0;
+}
+#endif
