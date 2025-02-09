@@ -1,4 +1,5 @@
 #include "shell.h"
+#include "parser.h"
 
 #define _POSIX_C_SOURCE 200809L
 
@@ -82,12 +83,10 @@ void run_command(DA *ARGS) {
   DA *sys_comm = extract_commands_from_dir("/usr/bin/");
   if (res == NULL &&
       does_exist_in_commands((char *)ARGS->items[0], sys_comm) == 1) {
-    printf("herhehrehrh");
     res = command_concat("/usr/bin/", (char *)ARGS->items[0]);
     free(ARGS->items[0]);
     ARGS->items[0] = res;
   }
-  printf(":::::%s:::%s\n", (char *)ARGS->items[0], res);
   child_pid = getpid();
   execve((char *)ARGS->items[0], (char **)ARGS->items, NULL);
   perror("SHELL");
@@ -172,6 +171,155 @@ void command_exec() {
   }
 }
 
+// #define READ_END 0
+// #define WRITE_END 1
+//
+// void close_prev_pipes_and_read(int curr, int *fildess[]) {
+//   int i;
+//   int read_end;
+//   int write_end;
+//   i = 0;
+//
+//   for (i = 0; i < curr - 1; i++) {
+//     printf("foing\n");
+//     read_end = fildess[i][READ_END];
+//     write_end = fildess[i][WRITE_END];
+//     close(read_end);
+//     close(write_end);
+//   }
+//   read_end = fildess[i][READ_END];
+//   write_end = fildess[i][WRITE_END];
+//   dup2(read_end, READ_END);
+//   close(read_end);
+//   close(write_end);
+// }
+//
+// void piping(DA *commands, int pipe_size) { // type of commands
+//   // pipe_size = DA_size(commands) - 1;
+//   // int p;
+//   int commands_size;
+//   //int *fildessp[pipe_size];
+//   commands_size = DA_size(commands);
+//   // for (p = 0; p < pipe_size; p++) {
+//   //   int fildes[2];
+//   //   fildessp[p] = fildes;
+//   // }
+//   //int read_end, write_end;
+//   int fildes1[2];
+//   int fildes2[2];
+//   int fildes3[2];
+//  // int fildes4[2];
+//   int *fildess[4] = {fildes1, fildes2, fildes3};
+//
+//   pipe(fildess[0]);
+//   pipe(fildess[1]);
+//   pipe(fildess[2]);
+//
+//   // create pipes
+//   // init pipes
+//   //
+//   for (int i = 0; i < commands_size; i++) {
+//
+//     int pid = fork();
+//     if (pid == 0) {
+//       int *fildes = fildess[i];
+//       if (i == 0) {
+//         close(fildes[READ_END]);
+//         dup2(fildes[WRITE_END], STDOUT_FILENO);
+//         close(fildes[WRITE_END]);
+//       } else if (i == pipe_size) {
+//         close_prev_pipes_and_read(i, fildess);
+//       } else {
+//         int read_end, write_end;
+//         close_prev_pipes_and_read(i, fildess);
+//         read_end = fildess[i][READ_END];
+//         write_end = fildess[i][WRITE_END];
+//         close(read_end);
+//         dup2(write_end, WRITE_END);
+//         close(write_end);
+//       }
+//       DA *COMMAND = (DA *)commands->items[i];
+//       if (execve((char *)COMMAND->items[0], (char **)COMMAND->items, NULL) ==
+//           -1) {
+//         perror("SHELL");
+//         exit(0);
+//       }
+//     }
+//   }
+//
+//   for (int i = 0; i < 3; i++) {
+//     int *fildes = fildess[i];
+//     close(fildes[0]);
+//     close(fildes[1]);
+//   }
+//
+//   while (wait(NULL) > 0) {
+//     printf("this\n");
+//   };
+// }
+//
+void command_exec2() {
+  DA *tokens;
+  char buf[1024];
+  int buf_len;
+
+  prompt_line();
+  buf_len = readline(buf);
+  if (buf_len == 0)
+    return;
+
+  tokens = DA_new();
+  // CHANGE read_commands to something else
+  read_commands(tokens, buf);
+  DA *ARGS = parse_tokens(tokens);
+  DA *STMTS = parser(tokens);
+
+  for (int i = 0; i < DA_size(STMTS); i++) {
+    statement_t *stmt;
+    stmt = ((statement_t *)STMTS->items[i]);
+    if (stmt->type == PIPE_STATEMENT) {
+      piping(stmt->commands, DA_size(stmt->commands) - 1);
+    }
+  }
+  return;
+  // EMPTY
+  printf("----------- DA_SIZE(%d):%d\n", DA_size(ARGS), buf[0]);
+  if (DA_size(ARGS) == 0) {
+    printf("-----------\n");
+    return;
+  }
+
+  // EXIT COMMAND
+  if (is_exit_command((char *)ARGS->items[0])) {
+    Token_free_all(tokens);
+    DA_free(ARGS);
+    exit(EXIT_SUCCESS);
+  }
+
+  if (is_cd((char *)ARGS->items[0])) {
+    my_cd(DA_size(ARGS), (char **)ARGS->items);
+    Token_free_all(tokens);
+    DA_free(ARGS);
+    return;
+  }
+
+  pid_t pid = Fork();
+  if (pid == 0) {
+    child_pid = getpid();
+    printf("i am child pid: %d\n", child_pid);
+    run_command(ARGS); // RUN COMMAND
+    printf("doesnot come here\n");
+    while (waitpid(-1, NULL, 0) < 0) {
+      printf("[%d]: killed\n", 0);
+    }
+    Token_free_all(tokens);
+    DA_free(ARGS);
+  } else {
+    Token_free_all(tokens);
+    DA_free(ARGS);
+  }
+}
+
 int main() {
   printf("WELCOME %d\n", getpid());
   shell_pid = getpid();
@@ -191,7 +339,7 @@ int main() {
 
   while (1) {
     // printf("starting\n");
-    command_exec();
+    command_exec2();
     // while (waitpid(-1, NULL, 0) > 0) {
     //   printf("terminated from parent \n");
     // }

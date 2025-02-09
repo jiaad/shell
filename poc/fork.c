@@ -81,112 +81,12 @@ int main(void) {
     }
   }
 
-  // int pid = fork();
-  // if (pid == 0) {
-  //   close(fildes[READ_END]);
-  //   dup2(fildes[WRITE_END], STDOUT_FILENO);
-  //   close(fildes[WRITE_END]);
-  //   char *COM[3];
-  //   COM[0] = strdup(commands[0]);
-  //   COM[1] = strdup(commands2[0]);
-  //   COM[2] = NULL;
-  //   if (execve(COM[0], COM, NULL) == -1) {
-  //     free(COM[0]);
-  //     free(COM[1]);
-  //     perror("SHELL");
-  //     exit(0);
-  //   }
-  // }
-  //
-  // pid = fork();
-  // if (pid == 0) {
-  //   close(fildes[WRITE_END]);
-  //   //   close(fildes2[WRITE_END]);
-  //   dup2(fildes[READ_END], STDIN_FILENO);
-  //   close(fildes[READ_END]);
-  //   dup2(fildes2[WRITE_END], STDOUT_FILENO);
-  //   close(fildes2[WRITE_END]);
-  //   close(fildes2[READ_END]);
-  //   char *COM[3];
-  //   COM[0] = strdup(commands[1]);
-  //   COM[1] = strdup(commands2[1]);
-  //   COM[2] = NULL;
-  //   if (execve(COM[0], COM, NULL) == -1) {
-  //
-  //     free(COM[0]);
-  //     free(COM[1]);
-  //     perror("SHELL");
-  //     exit(0);
-  //   }
-  // }
-  //
-  // pid = fork();
-  // if (pid == 0) {
-  //   close(fildes[READ_END]);
-  //   close(fildes[WRITE_END]);
-  //
-  //   close(fildes2[WRITE_END]);
-  //   dup2(fildes2[READ_END], READ_END);
-  //   close(fildes2[READ_END]);
-  //
-  //   char *COM[3];
-  //   COM[0] = strdup(commands[2]);
-  //   COM[1] = strdup(commands2[2]);
-  //   COM[2] = NULL;
-  //   if (execve(COM[0], COM, NULL) == -1) {
-  //     free(COM[0]);
-  //     free(COM[1]);
-  //     perror("SHELL");
-  //     exit(0);
-  //   }
-  // }
   for (int i = 0; i < 3; i++) {
     int *fildes = fildess[i];
     close(fildes[0]);
     close(fildes[1]);
   }
 
-  // pid = fork();
-  // if (pid == 0) {
-  //   close(fildes[WRITE_END]);
-  //   dup2(fildes[READ_END], READ_END);
-  //   close(fildes[READ_END]);
-  //
-  //   dup2(fildes2[WRITE_END], WRITE_END);
-  //   close(fildes2[WRITE_END]);
-  //
-  //   char *COM[3];
-  //   COM[0] = strdup(commands[1]);
-  //   COM[1] = strdup(commands2[1]);
-  //   COM[2] = NULL;
-  //   execve(COM[0], COM, NULL);
-  //   perror("SHELL");
-  //   exit(0);
-  // }
-  //
-  // pid = fork();
-  // if (pid == 0) {
-  //   close(fildes[WRITE_END]);
-  //   close(fildes[READ_END]);
-  //
-  //   close(fildes2[WRITE_END]);
-  //   dup2(fildes2[READ_END], READ_END);
-  //   close(fildes2[READ_END]);
-  //   //  close(fildes2[WRITE_END]);
-  //   char *COM[3];
-  //   COM[0] = strdup(commands[2]);
-  //   COM[1] = strdup(commands2[2]);
-  //   COM[2] = NULL;
-  //   execve(COM[0], COM, NULL);
-  //   perror("SHELL");
-  //   exit(0);
-  // }
-  // close(fildes[WRITE_END]);
-  // close(fildes[READ_END]);
-  // // close(fildes[READ_END]);
-  // close(fildes2[WRITE_END]);
-  // close(fildes2[READ_END]);
-  // close(fildes2[READ_END]);
   while (wait(NULL) > 0) {
     printf("this\n");
   };

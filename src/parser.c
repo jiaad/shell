@@ -181,7 +181,7 @@ char *primary(store_t *store) {
   exit(EXIT_FAILURE);
 }
 
-#define __TESTING_PARSER__
+// #define __TESTING_PARSER__
 
 #ifdef __TESTING_PARSER__
 int main(void) {

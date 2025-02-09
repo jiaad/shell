@@ -29,4 +29,5 @@ int match(store_t *store, char *str);
 int matchType(store_t *store, enum tokens tok);
 char *primary(store_t *store);
 DA *command_extract(store_t *store);
+DA *parser(DA *tokens);
 #endif
