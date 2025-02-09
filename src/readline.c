@@ -47,7 +47,7 @@ int readline(char buf[]){
     exit(EXIT_SUCCESS);
 
   }
-  printf("bytes read: %ld\n", bytes_read);
+  // printf("bytes read: %ld\n", bytes_read);
   buf[bytes_counter] = '\0';
   //write(STDOUT_FILENO, "\n", 1);
   return bytes_counter;

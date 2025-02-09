@@ -1,8 +1,4 @@
 #include "parser.h"
-#include "token.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 /*
  * 1 - PIPE
  * 2 - REDIRECTION
@@ -56,6 +52,11 @@ DA *parse_tokens(DA *tokens) {
 statement_t *statement_new(DA *commands) {
   statement_t *stmt;
   stmt = malloc(sizeof(statement_t));
+  if (stmt == NULL) {
+    fprintf(stderr, "Error during malloc on statement_new\n");
+    exit(EXIT_FAILURE);
+  }
+  stmt->type = COMMAND_STATEMENT;
   if (DA_size(commands) >= 2) {
     stmt->type = PIPE_STATEMENT;
   }
@@ -88,8 +89,7 @@ int match(store_t *store, char *str) {
 }
 
 int matchType(store_t *store, enum tokens tok) {
-  if (store->idx == DA_size(store->tokens) - 1) {
-    printf("here\n");
+  if (store->idx == DA_size(store->tokens)) {
     return 0;
   }
 
@@ -120,16 +120,15 @@ DA *parser(DA *tokens) {
   int len;
   stmts = DA_new();
   store = store_new(tokens);
-  printf("starting: %d\n", DA_size(tokens));
 
- len = DA_size(tokens);
-  while (store->idx < len - 1) {
+  len = DA_size(tokens);
+  // fix this issue
+  while (store->idx < len) {
     // EXPR
     DA *da;
     da = E(store);
     statement_t *stmt = statement_new(da);
     DA_push(stmts, stmt);
-    printf("printing commands [%d]\n", DA_size(da));
     // for (int j = 0; j < DA_size(da); j++) {
     //   printf("-> %s\n", (char *)da->items[j]);
     //   // Token_free(da->items[j]);
@@ -145,8 +144,6 @@ DA *parser(DA *tokens) {
 }
 
 DA *E(store_t *store) {
-  printf("E---------------\n");
-  printf("indiddididi %d - %d\n", store->state->type, PIPE);
   DA *commands = DA_new();
   DA *prim = command_extract(store);
   if (prim != NULL)
@@ -161,11 +158,9 @@ DA *E(store_t *store) {
 DA *command_extract(store_t *store) {
   DA *com = DA_new();
 
-  while (store->state->type == STRING) {
-    DA_push(com, strdup(store->state->literal));
-    if (!matchType(store, store->state->type)) {
-      return com;
-    }
+  while (matchType(store, STRING)) {
+    Token *token = previous(store);
+    DA_push(com, strdup(token->literal));
   }
 
   return com;
@@ -193,7 +188,8 @@ int main(void) {
   //     "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .   | ls -al");
   // read_commands(da, "find -pingiiiiiii");
 
-  read_commands(tokens, "ls -al -jiad | grep jiad | ping google.com");
+  //read_commands(tokens, "ls -al -jiad | grep jiad | ping google.com");
+  read_commands(tokens, "/bin/ls");
   printf("[len: %d] [capacity: %d]\n", DA_size(tokens), tokens->capacity);
   for (int j = 0; j < DA_size(tokens); j++) {
     Token_print(tokens->items[j]);
@@ -207,7 +203,7 @@ int main(void) {
     statement_t *U_S = ((statement_t *)stmts->items[i]);
 
     printf("{commands: %d} \n", i);
-    for (int k = 0; k < DA_size((DA*)U_S->commands); k++) {
+    for (int k = 0; k < DA_size((DA *)U_S->commands); k++) {
 
       printf("--> command: %d\n", k);
 

@@ -8,7 +8,6 @@ void close_prev_pipes_and_read(int curr, int *fildess[]) {
   i = 0;
 
   for (i = 0; i < curr - 1; i++) {
-    printf("foing\n");
     read_end = fildess[i][READ_END];
     write_end = fildess[i][WRITE_END];
     close(read_end);
@@ -82,7 +81,6 @@ void piping(DA *commands, int pipe_size) { // type of commands
   close_pipe(fildess, pipe_size);
   free_pipe(fildess, pipe_size);
 
-  while (wait(NULL) > 0) {
-    printf("terminated child\n");
-  };
+  while (wait(NULL) > 0)
+    ;
 }

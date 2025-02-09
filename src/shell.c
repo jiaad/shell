@@ -1,4 +1,5 @@
 #include "shell.h"
+#include "commands.h"
 #include "parser.h"
 
 #define _POSIX_C_SOURCE 200809L
@@ -171,6 +172,41 @@ void command_exec() {
   }
 }
 
+void single_command_exec(DA *ARGS) {
+  if (DA_size(ARGS) == 0) {
+    printf("-----------\n");
+    return;
+  }
+
+  // EXIT COMMAND
+  if (is_exit_command((char *)ARGS->items[0])) {
+    // Token_free_all(tokens);
+    DA_free(ARGS);
+    exit(EXIT_SUCCESS);
+  }
+
+  if (is_cd((char *)ARGS->items[0])) {
+    my_cd(DA_size(ARGS), (char **)ARGS->items);
+    // Token_free_all(tokens);
+    DA_free(ARGS);
+    return;
+  }
+
+  pid_t pid = Fork();
+  if (pid == 0) {
+    child_pid = getpid();
+    run_command(ARGS); // RUN COMMAND
+    while (waitpid(-1, NULL, 0) < 0) {
+      printf("[%d]: killed\n", 0);
+    }
+    // Token_free_all(tokens);
+    DA_free(ARGS);
+  } else {
+    // Token_free_all(tokens);
+    DA_free(ARGS);
+  }
+}
+
 // #define READ_END 0
 // #define WRITE_END 1
 //
@@ -271,7 +307,7 @@ void command_exec2() {
   tokens = DA_new();
   // CHANGE read_commands to something else
   read_commands(tokens, buf);
-  DA *ARGS = parse_tokens(tokens);
+  // DA *ARGS = parse_tokens(tokens);
   DA *STMTS = parser(tokens);
 
   for (int i = 0; i < DA_size(STMTS); i++) {
@@ -279,45 +315,11 @@ void command_exec2() {
     stmt = ((statement_t *)STMTS->items[i]);
     if (stmt->type == PIPE_STATEMENT) {
       piping(stmt->commands, DA_size(stmt->commands) - 1);
+    } else if (stmt->type == COMMAND_STATEMENT) {
+      single_command_exec((DA *)stmt->commands->items[0]);
     }
   }
-  return;
-  // EMPTY
-  printf("----------- DA_SIZE(%d):%d\n", DA_size(ARGS), buf[0]);
-  if (DA_size(ARGS) == 0) {
-    printf("-----------\n");
-    return;
-  }
-
-  // EXIT COMMAND
-  if (is_exit_command((char *)ARGS->items[0])) {
-    Token_free_all(tokens);
-    DA_free(ARGS);
-    exit(EXIT_SUCCESS);
-  }
-
-  if (is_cd((char *)ARGS->items[0])) {
-    my_cd(DA_size(ARGS), (char **)ARGS->items);
-    Token_free_all(tokens);
-    DA_free(ARGS);
-    return;
-  }
-
-  pid_t pid = Fork();
-  if (pid == 0) {
-    child_pid = getpid();
-    printf("i am child pid: %d\n", child_pid);
-    run_command(ARGS); // RUN COMMAND
-    printf("doesnot come here\n");
-    while (waitpid(-1, NULL, 0) < 0) {
-      printf("[%d]: killed\n", 0);
-    }
-    Token_free_all(tokens);
-    DA_free(ARGS);
-  } else {
-    Token_free_all(tokens);
-    DA_free(ARGS);
-  }
+  // FREE EVERYTHING
 }
 
 int main() {
@@ -344,8 +346,8 @@ int main() {
     //   printf("terminated from parent \n");
     // }
     while (waitpid(-1, &status, 0) > 0) {
-      printf("terminated from parent : WIFEXITED(%d) WEXITSTATUS(%d)\n",
-             WIFEXITED(status), WEXITSTATUS(status));
+      //   printf("terminated from parent : WIFEXITED(%d) WEXITSTATUS(%d)\n",
+      //         WIFEXITED(status), WEXITSTATUS(status));
     }
   }
 
