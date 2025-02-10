@@ -71,7 +71,7 @@ int is_exit_command(char *command) {
 //   exit(1);
 // }
 
-void single_command_exec(DA *ARGS) {
+void single_command_exec(DA *ARGS, DA *STMTS, DA *tokens) {
   if (DA_size(ARGS) == 0) {
     printf("-----------\n");
     return;
@@ -80,7 +80,13 @@ void single_command_exec(DA *ARGS) {
   // EXIT COMMAND
   if (is_exit_command((char *)ARGS->items[0])) {
     // Token_free_all(tokens);
-    DA_free(ARGS);
+  //  DA_free(ARGS);
+  // FREE EVERYTHING
+    for(int i = 0; i < DA_size(tokens); i++){
+      Token_free(tokens->items[i]);
+    }
+    Parser_free(STMTS);
+    DA_free(tokens);
     exit(EXIT_SUCCESS);
   }
 
@@ -99,10 +105,10 @@ void single_command_exec(DA *ARGS) {
       printf("[%d]: killed\n", 0);
     }
     // Token_free_all(tokens);
-    DA_free(ARGS);
+    //DA_free(ARGS);
   } else {
     // Token_free_all(tokens);
-    DA_free(ARGS);
+    //DA_free(ARGS);
   }
 }
 
@@ -126,10 +132,16 @@ void command_exec() {
     if (stmt->type == PIPE_STATEMENT) {
       piping(stmt->commands, DA_size(stmt->commands) - 1);
     } else if (stmt->type == COMMAND_STATEMENT) {
-      single_command_exec((DA *)stmt->commands->items[0]);
+      single_command_exec((DA *)stmt->commands->items[0], STMTS, tokens);
     }
   }
   // FREE EVERYTHING
+  for(int i = 0; i < DA_size(tokens); i++){
+    Token_free(tokens->items[i]);
+  }
+  printf("freeinf\n");
+  Parser_free(STMTS);
+  DA_free(tokens);
 }
 
 int main() {

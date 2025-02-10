@@ -64,6 +64,9 @@ statement_t *statement_new(DA *commands) {
 
   return stmt;
 }
+void statement_free(statement_t *stmt) {
+  free(stmt);
+}
 
 store_t *store_new(DA *tokens) {
   store_t *store;
@@ -111,6 +114,29 @@ Token *previous(store_t *store) {
   return store->tokens->items[store->idx - 1];
 }
 
+void Parser_free(DA *stmts){
+  for (int i = 0; i < DA_size(stmts); i++) {
+    statement_t *U_S = ((statement_t *)stmts->items[i]);
+
+    printf("{commands: %d} \n", i);
+    for (int k = 0; k < DA_size((DA *)U_S->commands); k++) {
+
+      printf("--> command: %d\n", k);
+
+      DA *M_S = U_S->commands->items[k];
+      for (int l = 0; l < DA_size(M_S); l++) {
+        printf("----> {k: %d} - {%s}\n", DA_size(M_S), (char *)M_S->items[l]);
+       free(M_S->items[l]);
+     }
+      DA_free(M_S);
+    }
+    DA_free(U_S->commands);
+
+    free(U_S);
+
+  }
+  DA_free(stmts);
+}
 /* PARSER
  *
  */
@@ -168,7 +194,7 @@ char *primary(store_t *store) {
   exit(EXIT_FAILURE);
 }
 
-// #define __TESTING_PARSER__
+//#define __TESTING_PARSER__
 
 #ifdef __TESTING_PARSER__
 int main(void) {
@@ -181,7 +207,7 @@ int main(void) {
   // read_commands(da, "find -pingiiiiiii");
 
   // read_commands(tokens, "ls -al -jiad | grep jiad | ping google.com");
-  read_commands(tokens, "/bin/ls");
+  tokenize(tokens, "/bin/ls");
   printf("[len: %d] [capacity: %d]\n", DA_size(tokens), tokens->capacity);
   for (int j = 0; j < DA_size(tokens); j++) {
     Token_print(tokens->items[j]);
@@ -205,6 +231,12 @@ int main(void) {
       }
     }
   }
+
+  Parser_free(stmts);
+  for (int j = 0; j < DA_size(tokens); j++) {
+     Token_free(tokens->items[j]);
+  }
+  DA_free(tokens);
 
   return 0;
 }

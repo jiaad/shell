@@ -118,31 +118,27 @@ char *command_concat(char *s1, char *s2) {
   return res;
 }
 
-void exec_command_and_free(DA *ARGS) {
+void exec_command_and_free(DA *command) {
   char *res = NULL;
-  if (ARGS == NULL) {
+  if (command== NULL) {
     exit(1);
   }
-  // if(builtin_commands((char *)ARGS->items[0])){
-  //   printf("herhehrehrh");
-  //   res = command_concat("./bin/", (char *)ARGS->items[0]);
-  //   free(ARGS->items[0]);
-  //   ARGS->items[0] = res;
-  // }
+
   DA *sys_comm = get_sys_commands();
-  int does_exists = does_exist_in_commands((char *)ARGS->items[0], sys_comm);
+  int does_exists = does_exist_in_commands((char *)command->items[0], sys_comm);
   if (res == NULL && does_exists > -1) {
     res = (char *)((command_t *)sys_comm->items[does_exists])->path;
-    free(ARGS->items[0]);
-    ARGS->items[0] = res;
+    free(command->items[0]);
+    command->items[0] = res;
   }
+  DA_push(command, NULL);
   // child_pid = getpid();
-  execve((char *)ARGS->items[0], (char **)ARGS->items, NULL);
+  execve((char *)command->items[0], (char **)command->items, NULL);
   perror("SHELL");
-  DA_free(ARGS);
+  //DA_free(ARGS);
   // if (res != NULL)
   //   free(res);
-  Commands_free(sys_comm); // TODO: free command_t
+//  Commands_free(sys_comm); // TODO: free command_t
   exit(1);
 }
 
