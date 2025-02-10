@@ -10,7 +10,7 @@ typedef struct Scanner {
   char *input;
 } Scanner;
 
-void read_commands(DA *tokens, char *command);
+void tokenize(DA *tokens, char *command);
 void read_command(char *str);
 char *slice_str(char *src, int start, int end);
 int cs_strlen(char *str);

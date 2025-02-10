@@ -101,7 +101,7 @@ char *slice_str(char *src, int start, int end) {
 }
 // send array of tokens
 //
-void read_commands(DA *tokens, char *command) {
+void tokenize(DA *tokens, char *command) {
   // while next char is not /0
   Scanner scanner;
   scanner.ch = '\0'; // command[0];

@@ -2,22 +2,56 @@
 #include <unistd.h>
 // #define __TESTING__
 
-DA *extract_commands_from_dir(char *path) {
-  DA *commands;
+command_t *Command_new() {
+  command_t *com;
+  com = malloc(sizeof(command_t));
+  return com;
+}
+
+void Command_free(command_t *command) {
+  //
+  free(command->command);
+  free(command->path);
+  free(command);
+}
+
+DA *extract_commands_from_dir(DA *commands, char *path) {
   DIR *dirp;
   struct dirent *dir;
+  command_t *comm;
 
-  commands = DA_new();
   dirp = opendir(path);
 
   if (dirp == NULL) {
     fprintf(stderr, "Couldn't read %s", path);
     exit(EXIT_FAILURE);
   }
+
   while ((dir = readdir(dirp))) {
-    DA_push(commands, strdup(dir->d_name));
+    comm = Command_new();
+    comm->path = command_concat(path, dir->d_name);
+    comm->command = strdup(dir->d_name);
+    DA_push(commands, comm);
   }
   closedir(dirp);
+  return commands;
+}
+
+/*
+ * GET COMMANDS FROM PATHS
+ * [{
+ *  command: ls,
+ *  fullPath; /bin/ls
+ * }]
+ */
+DA *get_sys_commands() {
+  DA *commands;
+  commands = DA_new();
+
+  char *paths[2] = {"/usr/bin/", "/bin/"};
+  extract_commands_from_dir(commands, paths[0]);
+  extract_commands_from_dir(commands, paths[1]);
+
   return commands;
 }
 
@@ -32,20 +66,27 @@ void Commands_free(DA *commands) {
   DA_free(commands);
 }
 
+/*
+ * command : str
+ * commands : [{}, {}] -> struct command_t
+ *
+ * return -1 if not exist else index
+ * */
 int does_exist_in_commands(char *command, DA *commands) {
   int i;
+  int size;
 
   i = 0;
+  size = DA_size(commands);
 
-  while (i < DA_size(commands)) {
-    // printf("testing %s=%s == %d\n", command, (char*)commands->items[i],
-    // strcmp(command, (char *)commands->items[i]));
-    if (strcmp(command, (char *)commands->items[i]) == 0) {
-      return 1;
+  while (i < size) {
+    if (strcmp(command, (char *)((command_t *)commands->items[i])->command) ==
+        0) {
+      return i;
     }
     i++;
   }
-  return 0;
+  return -1;
 }
 
 char *command_concat(char *s1, char *s2) {
@@ -83,10 +124,10 @@ void exec_command_and_free(DA *ARGS) {
   //   free(ARGS->items[0]);
   //   ARGS->items[0] = res;
   // }
-  DA *sys_comm = extract_commands_from_dir("/usr/bin/");
-  if (res == NULL &&
-      does_exist_in_commands((char *)ARGS->items[0], sys_comm) == 1) {
-    res = command_concat("/usr/bin/", (char *)ARGS->items[0]);
+  DA *sys_comm = get_sys_commands();
+  int does_exists = does_exist_in_commands((char *)ARGS->items[0], sys_comm);
+  if (res == NULL && does_exists > -1) {
+    res = (char *)((command_t *)sys_comm->items[does_exists])->path;
     free(ARGS->items[0]);
     ARGS->items[0] = res;
   }
@@ -94,16 +135,16 @@ void exec_command_and_free(DA *ARGS) {
   execve((char *)ARGS->items[0], (char **)ARGS->items, NULL);
   perror("SHELL");
   DA_free(ARGS);
-  if (res != NULL)
-    free(res);
-  Commands_free(sys_comm);
+  // if (res != NULL)
+  //   free(res);
+  Commands_free(sys_comm); // TODO: free command_t
   exit(1);
 }
 
 #ifdef __TESTING__
 int main() {
   DA *bin_commands;
-  bin_commands = extract_commands_from_dir("/usr/bin");
+  bin_commands = get_sys_commands();
   for (int i = 0; i < DA_size(bin_commands); i++) {
     printf("%d=%s\n", i, (char *)bin_commands->items[i]);
   }

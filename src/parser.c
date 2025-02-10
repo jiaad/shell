@@ -129,16 +129,7 @@ DA *parser(DA *tokens) {
     da = E(store);
     statement_t *stmt = statement_new(da);
     DA_push(stmts, stmt);
-    // for (int j = 0; j < DA_size(da); j++) {
-    //   printf("-> %s\n", (char *)da->items[j]);
-    //   // Token_free(da->items[j]);
-    // }
-    // DA_free(da);
   };
-
-  // if (strcmp("$", (char *)store->state->literal) == 0) {
-  //   printf("finished\n");
-  // }
   free(store);
   return stmts;
 }
@@ -165,6 +156,7 @@ DA *command_extract(store_t *store) {
 
   return com;
 }
+
 char *primary(store_t *store) {
   /**/
   if (store->state->type == STRING) {
@@ -188,7 +180,7 @@ int main(void) {
   //     "find -pingiiiiiii -jiad -ping -leak-check; ls -al; ls .   | ls -al");
   // read_commands(da, "find -pingiiiiiii");
 
-  //read_commands(tokens, "ls -al -jiad | grep jiad | ping google.com");
+  // read_commands(tokens, "ls -al -jiad | grep jiad | ping google.com");
   read_commands(tokens, "/bin/ls");
   printf("[len: %d] [capacity: %d]\n", DA_size(tokens), tokens->capacity);
   for (int j = 0; j < DA_size(tokens); j++) {
