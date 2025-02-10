@@ -5,6 +5,10 @@
 command_t *Command_new() {
   command_t *com;
   com = malloc(sizeof(command_t));
+  if(com == NULL){
+    fprintf(stderr, "ERROR DURING COMMAND_NEW malloc \n");
+    exit(EXIT_FAILURE);
+  }
   return com;
 }
 
@@ -28,6 +32,7 @@ DA *extract_commands_from_dir(DA *commands, char *path) {
   }
 
   while ((dir = readdir(dirp))) {
+    if(dir == NULL) break;
     comm = Command_new();
     comm->path = command_concat(path, dir->d_name);
     comm->command = strdup(dir->d_name);
