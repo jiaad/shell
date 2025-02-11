@@ -68,6 +68,7 @@ int is_exit_command(char *command) {
 //   if (res != NULL)
 //     free(res);
 //   Commands_free(sys_comm); // TODO: free comnmand_t
+//
 //   exit(1);
 // }
 
@@ -79,21 +80,13 @@ void single_command_exec(DA *ARGS, DA *STMTS, DA *tokens) {
 
   // EXIT COMMAND
   if (is_exit_command((char *)ARGS->items[0])) {
-    // Token_free_all(tokens);
-  //  DA_free(ARGS);
-  // FREE EVERYTHING
-    for(int i = 0; i < DA_size(tokens); i++){
-      Token_free(tokens->items[i]);
-    }
+    Token_free_all(tokens);
     Parser_free(STMTS);
-    DA_free(tokens);
     exit(EXIT_SUCCESS);
   }
 
   if (is_cd((char *)ARGS->items[0])) {
     my_cd(DA_size(ARGS), (char **)ARGS->items);
-    // Token_free_all(tokens);
-    DA_free(ARGS);
     return;
   }
 
@@ -124,7 +117,7 @@ void command_exec() {
 
   tokens = DA_new();
   tokenize(tokens, buf);
-  DA *STMTS = parser(tokens); // TODO: make free 
+  DA *STMTS = parser(tokens);
 
   for (int i = 0; i < DA_size(STMTS); i++) {
     statement_t *stmt;
@@ -136,12 +129,8 @@ void command_exec() {
     }
   }
   // FREE EVERYTHING
-  for(int i = 0; i < DA_size(tokens); i++){
-    Token_free(tokens->items[i]);
-  }
-  printf("freeinf\n");
   Parser_free(STMTS);
-  DA_free(tokens);
+  Token_free_all(tokens);
 }
 
 int main() {
@@ -153,7 +142,7 @@ int main() {
   Signal(SIGTERM, sig_handler);
 
   if (!sigsetjmp(sigint_buf, 1)) {
-    Signal(SIGINT, sig_handler);
+    //Signal(SIGINT, sig_handler);
     printf("STARTING\n");
   } else {
     printf("new prompt init\n");

@@ -134,7 +134,7 @@ void exec_command_and_free(DA *command) {
   DA_push(command, NULL);
   // child_pid = getpid();
   execve((char *)command->items[0], (char **)command->items, NULL);
-  perror("SHELL");
+  perror("SHELL ERROR:");
   //DA_free(ARGS);
   // if (res != NULL)
   //   free(res);

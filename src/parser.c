@@ -116,23 +116,17 @@ Token *previous(store_t *store) {
 
 void Parser_free(DA *stmts){
   for (int i = 0; i < DA_size(stmts); i++) {
-    statement_t *U_S = ((statement_t *)stmts->items[i]);
-
-    printf("{commands: %d} \n", i);
-    for (int k = 0; k < DA_size((DA *)U_S->commands); k++) {
-
-      printf("--> command: %d\n", k);
-
-      DA *M_S = U_S->commands->items[k];
+    statement_t *stmt = ((statement_t *)stmts->items[i]);
+    for (int k = 0; k < DA_size((DA *)stmt->commands); k++) {
+      DA *M_S = stmt->commands->items[k];
       for (int l = 0; l < DA_size(M_S); l++) {
-        printf("----> {k: %d} - {%s}\n", DA_size(M_S), (char *)M_S->items[l]);
        free(M_S->items[l]);
      }
       DA_free(M_S);
     }
-    DA_free(U_S->commands);
+    DA_free(stmt->commands);
 
-    free(U_S);
+    free(stmt);
 
   }
   DA_free(stmts);
