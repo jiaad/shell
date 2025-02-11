@@ -12,5 +12,5 @@
 #define READ_END 0
 #define WRITE_END 1
 
-void piping(DA *commands, int pipe_size);
+void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size);
 #endif

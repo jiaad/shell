@@ -92,7 +92,7 @@ void free_pipe(int *fildes[], int size)
   }
 }
 
-void piping(DA *commands, int pipe_size)
+void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size)
 { // type of commands
   int *fildess[pipe_size];
   for (int k = 0; k < pipe_size; k++){
@@ -125,10 +125,11 @@ void piping(DA *commands, int pipe_size)
         close(write_end);
       }
       DA *COMMAND = (DA *)commands->items[i];
-      exec_command_and_free(COMMAND);
+      exec_command_and_free(COMMAND, STMT, tokens);
     }
   }
 
+  // doesn't free if failed
   close_pipe(fildess, pipe_size);
   free_pipe(fildess, pipe_size);
   while (wait(NULL) > 0)

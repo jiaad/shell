@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include "parser.h"
+#include "token.h"
 
 typedef struct Command {
   char *command;
@@ -18,6 +20,7 @@ DA *extract_commands_from_dir(DA *commands, char *path);
 void Commands_free(DA *commands);
 int does_exist_in_commands(char *command, DA *commands);
 char *command_concat(char *s1, char *s2);
-void exec_command_and_free(DA *ARGS);
+// void exec_command_and_free(DA *ARGS);
+void exec_command_and_free(DA *commands, DA *STMTS, DA *tokens);
 DA *get_sys_commands();
 #endif

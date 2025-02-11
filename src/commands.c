@@ -2,6 +2,13 @@
 #include <unistd.h>
 // #define __TESTING__
 
+/**
+ * 
+ *
+ * COMMANDS
+ *
+ *
+ */
 command_t *Command_new() {
   command_t *com;
   com = malloc(sizeof(command_t));
@@ -60,16 +67,17 @@ DA *get_sys_commands() {
   return commands;
 }
 
-void Commands_free(DA *commands) {
+void free_sys_commands(DA *sys_commands){
   int i;
-  i = 0;
+  int len;
 
-  while (i < DA_size(commands)) {
-    free(commands->items[i]);
-    i++;
+  len = DA_size(sys_commands);
+  for(i = 0; i < len; i++){
+    Command_free(sys_commands->items[i]);
   }
-  DA_free(commands);
+  DA_free(sys_commands);
 }
+
 
 /*
  * command : str
@@ -118,7 +126,7 @@ char *command_concat(char *s1, char *s2) {
   return res;
 }
 
-void exec_command_and_free(DA *command) {
+void exec_command_and_free(DA *command, DA *STMTS, DA *tokens){
   char *res = NULL;
   if (command== NULL) {
     exit(1);
@@ -135,10 +143,9 @@ void exec_command_and_free(DA *command) {
   // child_pid = getpid();
   execve((char *)command->items[0], (char **)command->items, NULL);
   perror("SHELL ERROR:");
-  //DA_free(ARGS);
-  // if (res != NULL)
-  //   free(res);
-//  Commands_free(sys_comm); // TODO: free command_t
+  Parser_free(STMTS);
+  Token_free_all(tokens);
+  free_sys_commands(sys_comm);
   exit(1);
 }
 
