@@ -1,7 +1,7 @@
 #include "piping.h"
 #include "commands.h"
 
-void close_prev_pipes_and_read(int curr, int *fildess[])
+void close_prev_pipes_and_read(int curr, int fildess[][2])
 {
   int i;
   int read_end;
@@ -32,77 +32,55 @@ void close_prev_pipes_and_read(int curr, int *fildess[])
     if(!read_end) exit(1);
     write_end = fildess[i][WRITE_END];
     dup2(read_end, READ_END);
-    close(read_end);
-    close(write_end);
+        close(read_end);
+        close(write_end);
   }
 }
 
-void create_pipe(int *fildes[], int size){
+/**
+ * create all the pipes needed for the pipes 
+ */
+void create_pipes(int fildes[][2], int size){
   int i;
+  int rax;
 
   if (fildes == NULL)
     return;
 
   for (i = 0; i < size; i++) {
-    int *fd = malloc(sizeof(int) * 2);
-      if (fd == NULL) {
-          fprintf(stderr, "Memory allocation failed\n");
-          // Free previously allocated memory
-          for (int j = 0; j < i; j++) {
-              close(fildes[j][0]);
-              close(fildes[j][1]);
-              free(fildes[j]);
-          }
-          exit(EXIT_FAILURE);
-    }
-    fildes[i] = fd;
-    int rax = pipe(fd);
+    rax = pipe(fildes[i]);
     if (rax < 0) {
       fprintf(stderr, "pipe creation failed\n");
-      free(fd);
       for(int j = 0; j < i; j++){
         close(fildes[j][0]);
         close(fildes[j][1]);
-        free(fildes[j]);
       }
       exit(EXIT_FAILURE);
     }
   }
 }
 
-void close_pipe(int *fildes[], int size)
-{
+/*
+ * cles the pipes after the end of the programme
+ */
+void close_pipes(int fildes[][2], int size) {
   int i;
-  for (i = 0; i < size; i++)
-  {
+  for (i = 0; i < size; i++) {
     close(fildes[i][READ_END]);
     close(fildes[i][WRITE_END]);
   }
 }
 
-void free_pipe(int *fildes[], int size)
-{
-  int i;
-  for (i = 0; i < size; i++)
-  {
-    if (fildes[i] != NULL)
-    {
-      free(fildes[i]);
-    }
-  }
-}
-
-void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size)
-{ // type of commands
-  int *fildess[pipe_size];
+void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size) { // type of commands
+  int fildess[pipe_size][2];
   for (int k = 0; k < pipe_size; k++){
-    fildess[k] = NULL;
+    fildess[k][0] = 0;
+    fildess[k][1] = 0;
   }
   int commands_size;
-  create_pipe(fildess, pipe_size);
+  create_pipes(fildess, pipe_size);
   commands_size = DA_size(commands);
-  for (int i = 0; i < commands_size; i++)
-  {
+  for (int i = 0; i < commands_size; i++) {
     int pid = fork();
     if (pid == 0) {
       if (i == 0) {
@@ -129,9 +107,7 @@ void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size)
     }
   }
 
-  // doesn't free if failed
-  close_pipe(fildess, pipe_size);
-  free_pipe(fildess, pipe_size);
+  close_pipes(fildess, pipe_size);
   while (wait(NULL) > 0)
     ;
 }
