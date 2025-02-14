@@ -122,6 +122,10 @@ void command_exec() {
   tokens = DA_new();
   tokenize(tokens, buf);
   DA *STMTS = parser(tokens);
+  if(STMTS == NULL) {
+    Token_free_all(tokens);
+    return;
+  }
 
   for (int i = 0; i < DA_size(STMTS); i++) {
     statement_t *stmt;

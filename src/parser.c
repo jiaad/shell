@@ -142,11 +142,18 @@ DA *parser(DA *tokens) {
   store = store_new(tokens);
 
   len = DA_size(tokens);
+  if(len == 0) return stmts;
+
   // fix this issue
   while (store->idx < len) {
     // EXPR
     DA *da;
     da = E(store);
+    if(da == NULL) {
+      free(store);
+      DA_free(stmts);
+      return NULL;
+    }
     statement_t *stmt = statement_new(da);
     DA_push(stmts, stmt);
   };
@@ -155,8 +162,12 @@ DA *parser(DA *tokens) {
 }
 
 DA *E(store_t *store) {
-  DA *commands = DA_new();
+  DA *commands;
   DA *prim = command_extract(store);
+  if(prim == NULL) {
+    return NULL;
+  }
+  commands = DA_new();
   if (prim != NULL)
     DA_push(commands, prim);
   while (matchType(store, PIPE)) {
@@ -167,14 +178,16 @@ DA *E(store_t *store) {
 }
 
 DA *command_extract(store_t *store) {
-  DA *com = DA_new();
-
-  while (matchType(store, STRING)) {
-    Token *token = previous(store);
-    DA_push(com, strdup(token->literal));
+  if(store->state->type == STRING){
+    DA *com = DA_new();
+    while (matchType(store, STRING)) {
+      Token *token = previous(store);
+      DA_push(com, strdup(token->literal));
+    }
+    return com;
   }
-
-  return com;
+  printf("syntax not found\n");
+  return NULL;
 }
 
 char *primary(store_t *store) {
