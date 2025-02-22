@@ -73,6 +73,8 @@ void close_pipes(int fildes[][2], int size) {
 
 void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size) { // type of commands
   int fildess[pipe_size][2];
+  int status;
+  int childs[DA_size(commands)];
   for (int k = 0; k < pipe_size; k++){
     fildess[k][0] = 0;
     fildess[k][1] = 0;
@@ -82,6 +84,7 @@ void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size) { // type of comm
   commands_size = DA_size(commands);
   for (int i = 0; i < commands_size; i++) {
     int pid = fork();
+    childs[i] = pid;
     if (pid == 0) {
       if (i == 0) {
         int *fildes = fildess[i];
@@ -108,6 +111,7 @@ void piping(DA *commands, DA *STMT, DA *tokens, int pipe_size) { // type of comm
   }
 
   close_pipes(fildess, pipe_size);
-  while (wait(NULL) > 0)
-    ;
+  for(int c = 0; c < commands_size; c++){
+    waitpid(childs[c], &status, 0);
+  }
 }

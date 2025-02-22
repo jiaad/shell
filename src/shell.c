@@ -11,6 +11,7 @@ volatile sig_atomic_t child_pid = 0;
 jmp_buf sigint_buf;
 
 void sig_handler(int sig) {
+  printf("shell [%d] : current [%d] \n", shell_pid, getpid())
 //  pid_t pid = getpid();
   if(sig == SIGTSTP){
   //  printf("parent: [%d] : child: [%d] -> curr : [%d]\n", shell_pid, child_pid, 0);
@@ -95,9 +96,8 @@ void single_command_exec(DA *ARGS, DA *STMTS, DA *tokens) {
   }
 
   if (is_cd((char *)ARGS->items[0])) {
+    printf(" inside cd\n");
     my_cd(DA_size(ARGS), (char **)ARGS->items);
-    Token_free_all(tokens);
-    Parser_free(STMTS);
     return;
   }
 
@@ -138,6 +138,7 @@ void command_exec() {
   }
   while(waitpid(-1, NULL, 0)>0);
   // FREE EVERYTHING
+  printf(" it comes here\n");
   Parser_free(STMTS);
   Token_free_all(tokens);
 }

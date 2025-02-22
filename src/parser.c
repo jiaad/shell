@@ -151,7 +151,7 @@ DA *parser(DA *tokens) {
     da = E(store);
     if(da == NULL) {
       free(store);
-      DA_free(stmts);
+      Parser_free(stmts);
       return NULL;
     }
     statement_t *stmt = statement_new(da);

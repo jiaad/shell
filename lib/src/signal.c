@@ -7,7 +7,8 @@ handler_t *Signal(int sig, handler_t *handler){
   struct sigaction action, oldaction;
   action.sa_handler = handler;
   sigemptyset(&action.sa_mask);
-  action.sa_flags = SA_RESTART;
+  action.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+
 
   if(sigaction(sig, &action, &oldaction) == -1){
     printf("Error while using signal\n");
